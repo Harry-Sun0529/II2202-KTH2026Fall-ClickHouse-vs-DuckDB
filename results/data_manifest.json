@@ -1,0 +1,635 @@
+{
+  "duckdb_version": "2.0.0",
+  "sf1": {
+    "sf": 1,
+    "dbgen_s": 3.3,
+    "tables": {
+      "region": {
+        "rows": 5,
+        "rows_in_db": 5,
+        "expected": 5,
+        "bytes": 1069
+      },
+      "nation": {
+        "rows": 25,
+        "rows_in_db": 25,
+        "expected": 25,
+        "bytes": 2434
+      },
+      "supplier": {
+        "rows": 10000,
+        "rows_in_db": 10000,
+        "expected": 10000,
+        "bytes": 792417
+      },
+      "customer": {
+        "rows": 150000,
+        "rows_in_db": 150000,
+        "expected": 150000,
+        "bytes": 12317145
+      },
+      "part": {
+        "rows": 200000,
+        "rows_in_db": 200000,
+        "expected": 200000,
+        "bytes": 6312755
+      },
+      "partsupp": {
+        "rows": 800000,
+        "rows_in_db": 800000,
+        "expected": 800000,
+        "bytes": 42378461
+      },
+      "orders": {
+        "rows": 1500000,
+        "rows_in_db": 1500000,
+        "expected": 1500000,
+        "bytes": 56103853
+      },
+      "lineitem": {
+        "rows": 6001215,
+        "rows_in_db": 6001215,
+        "expected": 6001215,
+        "bytes": 205471331
+      }
+    },
+    "schema": {
+      "region": [
+        [
+          "r_regionkey",
+          "INTEGER"
+        ],
+        [
+          "r_name",
+          "VARCHAR"
+        ],
+        [
+          "r_comment",
+          "VARCHAR"
+        ]
+      ],
+      "nation": [
+        [
+          "n_nationkey",
+          "INTEGER"
+        ],
+        [
+          "n_name",
+          "VARCHAR"
+        ],
+        [
+          "n_regionkey",
+          "INTEGER"
+        ],
+        [
+          "n_comment",
+          "VARCHAR"
+        ]
+      ],
+      "supplier": [
+        [
+          "s_suppkey",
+          "BIGINT"
+        ],
+        [
+          "s_name",
+          "VARCHAR"
+        ],
+        [
+          "s_address",
+          "VARCHAR"
+        ],
+        [
+          "s_nationkey",
+          "INTEGER"
+        ],
+        [
+          "s_phone",
+          "VARCHAR"
+        ],
+        [
+          "s_acctbal",
+          "DECIMAL(15,2)"
+        ],
+        [
+          "s_comment",
+          "VARCHAR"
+        ]
+      ],
+      "customer": [
+        [
+          "c_custkey",
+          "BIGINT"
+        ],
+        [
+          "c_name",
+          "VARCHAR"
+        ],
+        [
+          "c_address",
+          "VARCHAR"
+        ],
+        [
+          "c_nationkey",
+          "INTEGER"
+        ],
+        [
+          "c_phone",
+          "VARCHAR"
+        ],
+        [
+          "c_acctbal",
+          "DECIMAL(15,2)"
+        ],
+        [
+          "c_mktsegment",
+          "VARCHAR"
+        ],
+        [
+          "c_comment",
+          "VARCHAR"
+        ]
+      ],
+      "part": [
+        [
+          "p_partkey",
+          "BIGINT"
+        ],
+        [
+          "p_name",
+          "VARCHAR"
+        ],
+        [
+          "p_mfgr",
+          "VARCHAR"
+        ],
+        [
+          "p_brand",
+          "VARCHAR"
+        ],
+        [
+          "p_type",
+          "VARCHAR"
+        ],
+        [
+          "p_size",
+          "INTEGER"
+        ],
+        [
+          "p_container",
+          "VARCHAR"
+        ],
+        [
+          "p_retailprice",
+          "DECIMAL(15,2)"
+        ],
+        [
+          "p_comment",
+          "VARCHAR"
+        ]
+      ],
+      "partsupp": [
+        [
+          "ps_partkey",
+          "BIGINT"
+        ],
+        [
+          "ps_suppkey",
+          "BIGINT"
+        ],
+        [
+          "ps_availqty",
+          "BIGINT"
+        ],
+        [
+          "ps_supplycost",
+          "DECIMAL(15,2)"
+        ],
+        [
+          "ps_comment",
+          "VARCHAR"
+        ]
+      ],
+      "orders": [
+        [
+          "o_orderkey",
+          "BIGINT"
+        ],
+        [
+          "o_custkey",
+          "BIGINT"
+        ],
+        [
+          "o_orderstatus",
+          "VARCHAR"
+        ],
+        [
+          "o_totalprice",
+          "DECIMAL(15,2)"
+        ],
+        [
+          "o_orderdate",
+          "DATE"
+        ],
+        [
+          "o_orderpriority",
+          "VARCHAR"
+        ],
+        [
+          "o_clerk",
+          "VARCHAR"
+        ],
+        [
+          "o_shippriority",
+          "INTEGER"
+        ],
+        [
+          "o_comment",
+          "VARCHAR"
+        ]
+      ],
+      "lineitem": [
+        [
+          "l_orderkey",
+          "BIGINT"
+        ],
+        [
+          "l_partkey",
+          "BIGINT"
+        ],
+        [
+          "l_suppkey",
+          "BIGINT"
+        ],
+        [
+          "l_linenumber",
+          "BIGINT"
+        ],
+        [
+          "l_quantity",
+          "DECIMAL(15,2)"
+        ],
+        [
+          "l_extendedprice",
+          "DECIMAL(15,2)"
+        ],
+        [
+          "l_discount",
+          "DECIMAL(15,2)"
+        ],
+        [
+          "l_tax",
+          "DECIMAL(15,2)"
+        ],
+        [
+          "l_returnflag",
+          "VARCHAR"
+        ],
+        [
+          "l_linestatus",
+          "VARCHAR"
+        ],
+        [
+          "l_shipdate",
+          "DATE"
+        ],
+        [
+          "l_commitdate",
+          "DATE"
+        ],
+        [
+          "l_receiptdate",
+          "DATE"
+        ],
+        [
+          "l_shipinstruct",
+          "VARCHAR"
+        ],
+        [
+          "l_shipmode",
+          "VARCHAR"
+        ],
+        [
+          "l_comment",
+          "VARCHAR"
+        ]
+      ]
+    }
+  },
+  "sf10": {
+    "sf": 10,
+    "dbgen_s": 36.6,
+    "tables": {
+      "region": {
+        "rows": 5,
+        "rows_in_db": 5,
+        "expected": 5,
+        "bytes": 1069
+      },
+      "nation": {
+        "rows": 25,
+        "rows_in_db": 25,
+        "expected": 25,
+        "bytes": 2434
+      },
+      "supplier": {
+        "rows": 100000,
+        "rows_in_db": 100000,
+        "expected": 100000,
+        "bytes": 7867184
+      },
+      "customer": {
+        "rows": 1500000,
+        "rows_in_db": 1500000,
+        "expected": 1500000,
+        "bytes": 123133261
+      },
+      "part": {
+        "rows": 2000000,
+        "rows_in_db": 2000000,
+        "expected": 2000000,
+        "bytes": 63314895
+      },
+      "partsupp": {
+        "rows": 8000000,
+        "rows_in_db": 8000000,
+        "expected": 8000000,
+        "bytes": 437316045
+      },
+      "orders": {
+        "rows": 15000000,
+        "rows_in_db": 15000000,
+        "expected": 15000000,
+        "bytes": 581406549
+      },
+      "lineitem": {
+        "rows": 59986052,
+        "rows_in_db": 59986052,
+        "expected": 59986052,
+        "bytes": 2206264570
+      }
+    },
+    "schema": {
+      "region": [
+        [
+          "r_regionkey",
+          "INTEGER"
+        ],
+        [
+          "r_name",
+          "VARCHAR"
+        ],
+        [
+          "r_comment",
+          "VARCHAR"
+        ]
+      ],
+      "nation": [
+        [
+          "n_nationkey",
+          "INTEGER"
+        ],
+        [
+          "n_name",
+          "VARCHAR"
+        ],
+        [
+          "n_regionkey",
+          "INTEGER"
+        ],
+        [
+          "n_comment",
+          "VARCHAR"
+        ]
+      ],
+      "supplier": [
+        [
+          "s_suppkey",
+          "BIGINT"
+        ],
+        [
+          "s_name",
+          "VARCHAR"
+        ],
+        [
+          "s_address",
+          "VARCHAR"
+        ],
+        [
+          "s_nationkey",
+          "INTEGER"
+        ],
+        [
+          "s_phone",
+          "VARCHAR"
+        ],
+        [
+          "s_acctbal",
+          "DECIMAL(15,2)"
+        ],
+        [
+          "s_comment",
+          "VARCHAR"
+        ]
+      ],
+      "customer": [
+        [
+          "c_custkey",
+          "BIGINT"
+        ],
+        [
+          "c_name",
+          "VARCHAR"
+        ],
+        [
+          "c_address",
+          "VARCHAR"
+        ],
+        [
+          "c_nationkey",
+          "INTEGER"
+        ],
+        [
+          "c_phone",
+          "VARCHAR"
+        ],
+        [
+          "c_acctbal",
+          "DECIMAL(15,2)"
+        ],
+        [
+          "c_mktsegment",
+          "VARCHAR"
+        ],
+        [
+          "c_comment",
+          "VARCHAR"
+        ]
+      ],
+      "part": [
+        [
+          "p_partkey",
+          "BIGINT"
+        ],
+        [
+          "p_name",
+          "VARCHAR"
+        ],
+        [
+          "p_mfgr",
+          "VARCHAR"
+        ],
+        [
+          "p_brand",
+          "VARCHAR"
+        ],
+        [
+          "p_type",
+          "VARCHAR"
+        ],
+        [
+          "p_size",
+          "INTEGER"
+        ],
+        [
+          "p_container",
+          "VARCHAR"
+        ],
+        [
+          "p_retailprice",
+          "DECIMAL(15,2)"
+        ],
+        [
+          "p_comment",
+          "VARCHAR"
+        ]
+      ],
+      "partsupp": [
+        [
+          "ps_partkey",
+          "BIGINT"
+        ],
+        [
+          "ps_suppkey",
+          "BIGINT"
+        ],
+        [
+          "ps_availqty",
+          "BIGINT"
+        ],
+        [
+          "ps_supplycost",
+          "DECIMAL(15,2)"
+        ],
+        [
+          "ps_comment",
+          "VARCHAR"
+        ]
+      ],
+      "orders": [
+        [
+          "o_orderkey",
+          "BIGINT"
+        ],
+        [
+          "o_custkey",
+          "BIGINT"
+        ],
+        [
+          "o_orderstatus",
+          "VARCHAR"
+        ],
+        [
+          "o_totalprice",
+          "DECIMAL(15,2)"
+        ],
+        [
+          "o_orderdate",
+          "DATE"
+        ],
+        [
+          "o_orderpriority",
+          "VARCHAR"
+        ],
+        [
+          "o_clerk",
+          "VARCHAR"
+        ],
+        [
+          "o_shippriority",
+          "INTEGER"
+        ],
+        [
+          "o_comment",
+          "VARCHAR"
+        ]
+      ],
+      "lineitem": [
+        [
+          "l_orderkey",
+          "BIGINT"
+        ],
+        [
+          "l_partkey",
+          "BIGINT"
+        ],
+        [
+          "l_suppkey",
+          "BIGINT"
+        ],
+        [
+          "l_linenumber",
+          "BIGINT"
+        ],
+        [
+          "l_quantity",
+          "DECIMAL(15,2)"
+        ],
+        [
+          "l_extendedprice",
+          "DECIMAL(15,2)"
+        ],
+        [
+          "l_discount",
+          "DECIMAL(15,2)"
+        ],
+        [
+          "l_tax",
+          "DECIMAL(15,2)"
+        ],
+        [
+          "l_returnflag",
+          "VARCHAR"
+        ],
+        [
+          "l_linestatus",
+          "VARCHAR"
+        ],
+        [
+          "l_shipdate",
+          "DATE"
+        ],
+        [
+          "l_commitdate",
+          "DATE"
+        ],
+        [
+          "l_receiptdate",
+          "DATE"
+        ],
+        [
+          "l_shipinstruct",
+          "VARCHAR"
+        ],
+        [
+          "l_shipmode",
+          "VARCHAR"
+        ],
+        [
+          "l_comment",
+          "VARCHAR"
+        ]
+      ]
+    }
+  }
+}
