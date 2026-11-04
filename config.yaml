@@ -1,0 +1,63 @@
+# Fixed configuration of the pilot. Everything here is also reported in the paper.
+project: II2202 quantitative exercise (ClickHouse vs DuckDB pilot)
+seed: 20261105
+
+engines:
+  clickhouse:
+    image: clickhouse/clickhouse-server:26.8.36.3   # current LTS line (26.8)
+    image_digest: sha256:d426d2f612e1e189c90f9a3f8dcd85a03c6851273833817a296bb327e63aa7a7
+    container: ii2202-clickhouse
+    max_server_memory_usage: 7516192768            # 7 GiB, below the 8 GiB cgroup limit
+    query_settings:                                # sent with every query
+      max_threads: 4
+      max_bytes_before_external_group_by: 3221225472   # 3 GiB: GROUP BY spills to disk
+      max_bytes_before_external_sort: 3221225472       # 3 GiB: ORDER BY spills to disk
+      use_query_cache: 0                               # no result cache
+      use_query_condition_cache: 0                     # no cached filter results
+  duckdb:
+    image: ii2202/duckdb-bench:2.0.0                # python:3.12-slim + duckdb==2.0.0
+    version: 2.0.0
+    container: ii2202-duckdb
+    pragmas:
+      memory_limit: 7GiB
+      threads: 4
+      temp_directory: /tmp/duck_spill
+
+container_limits:            # identical for both engine containers
+  memory: 8g
+  memory_swap: 8g            # = memory, i.e. no swap
+  cpus: 4
+  cpuset_cpus: "0-3"         # both engines on the same four vCPUs
+driver_cpuset: "4-7"         # the benchmark driver runs on the other four vCPUs
+
+data:
+  generator: duckdb tpch extension, CALL dbgen(sf=...)
+  format: parquet            # common input for both engines
+  scale_factors: [1, 10]
+  tables: [region, nation, supplier, customer, part, partsupp, orders, lineitem]
+
+queries:                     # from the Research Plan (2026-10-07), Table 1
+  - {id: 1,  class: scan}
+  - {id: 6,  class: scan}
+  - {id: 5,  class: join}
+  - {id: 9,  class: join}
+  - {id: 21, class: join}
+  - {id: 3,  class: aggregation}
+  - {id: 13, class: aggregation}
+  - {id: 18, class: aggregation}
+
+repetitions:
+  load: 3                    # per engine and SF
+  cold: 1                    # per engine x SF x query, after container restart + page-cache drop
+  warm: 20                   # consecutive runs right after the cold run
+
+memory_sampler:
+  interval_ms: 2             # cgroup memory.current / memory.stat sampling interval (<= 10 ms)
+  rss_interval_ms: 5         # DuckDB process RSS sampling (psutil) inside the engine container
+
+docker:
+  network: ii2202-net
+  volumes:
+    parquet: ii2202-parquet
+    clickhouse: ii2202-ch-data
+    duckdb: ii2202-duck-data
