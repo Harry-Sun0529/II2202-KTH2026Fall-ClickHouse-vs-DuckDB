@@ -24,6 +24,7 @@ plus a repository that re-runs the whole pipeline with `make all`.
 - [02 Pin engines and config](issues/02-pin-engines-config.md) — ClickHouse 26.8.36.3 (LTS), DuckDB 2.0.0; Q1,Q6 / Q5,Q9,Q21 / Q3,Q13,Q18 from the Research Plan; LaTeX via Docker texlive.
 - [03 Generate TPC-H Parquet](issues/03-generate-data.md) — dbgen SF1/SF10 to Parquet in a Docker volume; all row counts match the spec.
 - [04 Queries and correctness gate](issues/04-queries-correctness.md) — all 8 queries run unchanged on both engines except Q13 on ClickHouse (join_use_nulls = 1); both engines match the reference at SF1 and each other at SF10.
+- [05 Measurement harness](issues/05-harness.md) — cgroup sampling at ~3 ms for both engines, checked against memory.peak; failures recorded and recovered.
 
 ## Not yet specified
 

@@ -1,0 +1,22 @@
+{
+  "clickhouse": {
+    "max_threads": "4",
+    "max_bytes_before_external_group_by": "3221225472",
+    "max_bytes_ratio_before_external_group_by": "0.5",
+    "max_bytes_before_external_sort": "3221225472",
+    "max_bytes_ratio_before_external_sort": "0.5",
+    "join_algorithm": "direct,parallel_hash,hash,ie_join",
+    "max_memory_usage": "0",
+    "use_query_cache": "0",
+    "use_query_condition_cache": "0",
+    "max_server_memory_usage": "7516192768",
+    "version": "26.8.36.3"
+  },
+  "duckdb": {
+    "memory_limit": "7.0 GiB",
+    "preserve_insertion_order": "true",
+    "temp_directory": "/tmp/duck_spill",
+    "threads": "4",
+    "version": "2.0.0"
+  }
+}

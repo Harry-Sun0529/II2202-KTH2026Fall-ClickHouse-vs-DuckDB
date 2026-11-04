@@ -204,7 +204,16 @@ class Handler(socketserver.StreamRequestHandler):
         self.wfile.write((json.dumps(resp) + "\n").encode())
 
 
+def shutdown(signum, frame):
+    # PID 1 in the container: exit promptly on `docker stop` and close the database cleanly.
+    if state["con"] is not None:
+        state["con"].close()
+    os._exit(0)
+
+
 if __name__ == "__main__":
+    import signal
+    signal.signal(signal.SIGTERM, shutdown)
     socketserver.TCPServer.allow_reuse_address = True
     with socketserver.ThreadingTCPServer(("0.0.0.0", 9999), Handler) as srv:
         print("duck_server ready", duckdb.__version__, flush=True)
