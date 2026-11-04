@@ -1,0 +1,37 @@
+# Map: II2202 Quantitative Exercise (ClickHouse vs DuckDB pilot)
+
+Label: wayfinder:map
+
+## Destination
+
+A submittable `report/II2202_Quantitative_Exercise.pdf` built from real pilot
+measurements (ClickHouse vs DuckDB, 8 TPC-H queries, SF1 + SF10, 8 GiB / 4 cores),
+plus a repository that re-runs the whole pipeline with `make all`.
+
+## Notes
+
+- Source of truth for the task: `II2202_quantitative_exercise_PLAN.md` (user, 2026-11-04).
+  Where it says "follow the proposal", the Research Plan (2026-10-07) wins.
+- **Execution override**: the user asked to implement every ticket locally, so tickets
+  here include doing the work, not only deciding. One git commit per resolved ticket.
+- Each ticket has a verification gate; a ticket is resolved only when its gate passes.
+- Integrity: every number in the report comes from a real run. Failures are results.
+- Tracker: local markdown (`.scratch/ii2202-quant/issues/NN-*.md`).
+
+## Decisions so far
+
+- [01 Preflight and gate 0](issues/01-preflight.md) — Docker VM raised to 10240 MiB by user; M1 Pro 8 cores; full SF1+SF10 at 8 GiB/4 cores, no fallback needed.
+- [02 Pin engines and config](issues/02-pin-engines-config.md) — ClickHouse 26.8.36.3 (LTS), DuckDB 2.0.0; Q1,Q6 / Q5,Q9,Q21 / Q3,Q13,Q18 from the Research Plan; LaTeX via Docker texlive.
+
+## Not yet specified
+
+- Whether Q21 (correlated EXISTS / NOT EXISTS) runs unmodified on ClickHouse 26.8, or needs
+  a documented rewrite / replacement in the same class.
+- Exact ClickHouse spill thresholds that keep SF10 joins inside 7 GiB.
+- Wording of the "how much data is needed" section — depends on observed CV.
+
+## Out of scope
+
+- Part 1 quiz and Part 3 peer review (individual, must be done by the students).
+- Concurrency experiments (only proposed for the full study).
+- Canvas submission (done by a student after Weiyin's review).

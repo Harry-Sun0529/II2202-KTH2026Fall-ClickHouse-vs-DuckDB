@@ -1,0 +1,16 @@
+data/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+report/*.aux
+report/*.log
+report/*.fls
+report/*.fdb_latexmk
+report/*.out
+report/*.bbl
+report/*.blg
+report/*.synctex.gz
+report/build/
+results/tmp/
+.DS_Store
