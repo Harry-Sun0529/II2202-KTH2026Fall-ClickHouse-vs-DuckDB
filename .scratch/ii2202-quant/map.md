@@ -22,11 +22,11 @@ plus a repository that re-runs the whole pipeline with `make all`.
 
 - [01 Preflight and gate 0](issues/01-preflight.md) — Docker VM raised to 10240 MiB by user; M1 Pro 8 cores; full SF1+SF10 at 8 GiB/4 cores, no fallback needed.
 - [02 Pin engines and config](issues/02-pin-engines-config.md) — ClickHouse 26.8.36.3 (LTS), DuckDB 2.0.0; Q1,Q6 / Q5,Q9,Q21 / Q3,Q13,Q18 from the Research Plan; LaTeX via Docker texlive.
+- [03 Generate TPC-H Parquet](issues/03-generate-data.md) — dbgen SF1/SF10 to Parquet in a Docker volume; all row counts match the spec.
+- [04 Queries and correctness gate](issues/04-queries-correctness.md) — all 8 queries run unchanged on both engines except Q13 on ClickHouse (join_use_nulls = 1); both engines match the reference at SF1 and each other at SF10.
 
 ## Not yet specified
 
-- Whether Q21 (correlated EXISTS / NOT EXISTS) runs unmodified on ClickHouse 26.8, or needs
-  a documented rewrite / replacement in the same class.
 - Exact ClickHouse spill thresholds that keep SF10 joins inside 7 GiB.
 - Wording of the "how much data is needed" section — depends on observed CV.
 

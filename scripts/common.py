@@ -89,7 +89,7 @@ def start_clickhouse(dc):
     c = dc.containers.run(
         CH["image"], name=CH["container"], detach=True, network=NET, mounts=mounts,
         ulimits=[docker.types.Ulimit(name="nofile", soft=262144, hard=262144)],
-        environment={"CLICKHOUSE_SKIP_USER_SETUP": "1"}, **_limits(),
+        environment={"CLICKHOUSE_SKIP_USER_SETUP": "1", "CLICKHOUSE_DO_NOT_CHOWN": "1"}, **_limits(),
     )
     wait_clickhouse()
     return c

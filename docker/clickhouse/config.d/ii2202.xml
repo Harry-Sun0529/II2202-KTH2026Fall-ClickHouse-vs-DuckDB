@@ -2,6 +2,7 @@
     <!-- 7 GiB: below the container's 8 GiB cgroup limit, so ClickHouse refuses
          or spills before the kernel OOM-kills the container. -->
     <max_server_memory_usage>7516192768</max_server_memory_usage>
+    <listen_host>0.0.0.0</listen_host>
     <logger><level>warning</level><console>1</console></logger>
     <!-- Keep the query log (needed for engine-reported memory_usage). -->
     <query_log><database>system</database><table>query_log</table><flush_interval_milliseconds>1000</flush_interval_milliseconds></query_log>
