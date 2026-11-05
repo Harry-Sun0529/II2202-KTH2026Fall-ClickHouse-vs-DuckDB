@@ -80,6 +80,7 @@ token,status,source
 0.93,ok,comparison.csv[15].ratio_lo (identity)
 0.8,ok,comparison.csv[7].speedup_duck_over_ch (identity)
 20,constant,20 warm runs (config.yaml repetitions.warm); n = 20
+1.5,ok,comparison.csv[3].cold_ratio_ch_over_duck (identity)
 20,constant,20 warm runs (config.yaml repetitions.warm); n = 20
 95,constant,95 % confidence level
 95,constant,95 % confidence level

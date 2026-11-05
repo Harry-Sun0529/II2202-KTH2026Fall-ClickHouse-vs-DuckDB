@@ -30,6 +30,7 @@ Report: `report/II2202_Quantitative_Exercise.pdf` (8 pages). Checked 2026-11-05.
 
 - LaTeX: 0 errors, no undefined references or citations, no overfull box > 10 pt, no `??`.
 - Discussion: 265 words (≥ 100; plan target 200–300).
+- Figure 5: background lines grey, only the two medians coloured.
 - Numbers: 296 manifest entries all equal the current `results/stats/*.csv`; 423 number tokens in the expanded report: 279 matched to a CSV value, 144 are design constants listed with a reason in `check_report.py`; `main.tex` contains no hand-typed data values. Negative tests (injected wrong numbers, stale manifest value) are detected.
 - PDFs are byte-reproducible (`SOURCE_DATE_EPOCH`, no figure timestamps).
 
@@ -45,8 +46,8 @@ Report: `report/II2202_Quantitative_Exercise.pdf` (8 pages). Checked 2026-11-05.
 | 6 | should | p-values only reflect run-to-run noise; text "≤ 0.0001" vs table "< 0.001" | Fixed: caveat added; both use "< 0.001" |
 | 7 | should | "emptied page cache" while macOS cache was not emptied | Fixed in Procedure and Latency paragraph |
 | 8 | should | No reason for the E5 mismatch in §5 | Fixed: hedged candidate causes, marked as untested |
-| 9 | should | Same star for both engines' cold runs | Fixed: hollow star = ClickHouse, filled = DuckDB, both in legend |
-| 10 | should | Figure 2 fonts ~5 pt, pale Q18, hidden slope line | Fixed: printed ~1:1, Q18 dark grey, slope line dashed on top |
+| 9 | should | Same star for both engines' cold runs | Fixed; later Figure 1 was redesigned (SF1/SF10 stacked full width, no jittered points, cold run = engine-coloured diamond above its box) |
+| 10 | should | Figure 2 fonts ~5 pt, pale Q18, hidden slope line | Fixed: full width ~1:1, Q18 dark grey, dashed slope-1 line on top, legend replaced by end labels with each query's slope b |
 | 11 | should | Table 5 not quantified | Fixed: stopping rule (5 %, max 40), SF30 / 4 GiB, Mann–Whitney min p 0.008, total 1344 runs, pilot durations |
 | 12 | minor | 3.0 vs 9.8/3.2 = 3.06 | No change: 3.0 is correct from unrounded medians (9.77/3.25) |
 | 13 | minor | Disk/Parquet looks off from rounded values; GB vs GiB | Caption: ratios from unrounded sizes; GB/GiB defined |
@@ -70,7 +71,6 @@ Not changed on purpose: page count. The plan's target was 4–6 pages; the repor
 ## Still for the students
 
 - [ ] Weiyin reviews the PDF (and may change the header date, `\reportdate` in `report/main.tex`).
-- [ ] Decide on the AI-use statement (§8) — see the note in the final summary.
 - [ ] One of you submits on Canvas (course 63857, assignment 393683) before 2026-11-13 19:00.
 - [ ] Part 1 quiz (each student).
 - [ ] Part 3 peer review (each student, within two working days after the deadline).

@@ -89,66 +89,101 @@ def class_spans(ax, y=None):
 
 
 def f1_latency(r):
-    fig, axes = plt.subplots(1, 2, figsize=(6.2, 2.45), sharey=False)
-    rng = np.random.default_rng(0)
+    """Warm-run distribution per query (box) and the cold run (diamond above its box).
+
+    SF1 and SF10 are stacked so that each panel uses the full width.
+    """
+    fig, axes = plt.subplots(2, 1, figsize=(6.2, 4.3), sharex=True)
     for ax, sf in zip(axes, SFS):
         for k, e in enumerate(["clickhouse", "duckdb"]):
             st = ENG[e]
-            pos = np.arange(len(QORDER)) + (k - 0.5) * 0.38
+            pos = np.arange(len(QORDER)) + (k - 0.5) * 0.36
             data = [r[(r.engine == e) & (r.sf == sf) & (r.query_id == q) & (r.phase == "warm") & r.ok].latency_ms
                     for q in QORDER]
-            bp = ax.boxplot(data, positions=pos, widths=0.32, patch_artist=True, showfliers=False,
-                            medianprops=dict(color="black", lw=1.1), whiskerprops=dict(lw=0.7),
-                            capprops=dict(lw=0.7), boxprops=dict(lw=0.7))
+            bp = ax.boxplot(data, positions=pos, widths=0.3, patch_artist=True, showfliers=True,
+                            medianprops=dict(color="black", lw=1.2), whiskerprops=dict(lw=0.8, color="0.2"),
+                            capprops=dict(lw=0.8, color="0.2"), boxprops=dict(lw=0.8),
+                            flierprops=dict(marker="o", markersize=2.6, markerfacecolor="none",
+                                            markeredgecolor=st["color"], markeredgewidth=0.7))
             for b in bp["boxes"]:
-                b.set_facecolor(st["color"]); b.set_alpha(0.55); b.set_hatch(st["hatch"]); b.set_edgecolor("black")
-            for p, d in zip(pos, data):
-                ax.scatter(p + rng.uniform(-0.09, 0.09, len(d)), d, s=4, marker=st["marker"],
-                           facecolor="none" if e == "clickhouse" else st["color"], edgecolor=st["color"],
-                           lw=0.5, zorder=3)
-            cold = [r[(r.engine == e) & (r.sf == sf) & (r.query_id == q) & (r.phase == "cold") & r.ok].latency_ms for q in QORDER]
-            for p, c in zip(pos, cold):
+                b.set_facecolor(st["color"]); b.set_alpha(0.75); b.set_hatch(st["hatch"]); b.set_edgecolor("black")
+            for p, q, d in zip(pos, QORDER, data):
+                c = r[(r.engine == e) & (r.sf == sf) & (r.query_id == q) & (r.phase == "cold") & r.ok].latency_ms
                 if len(c):
-                    ax.scatter([p], c, marker="*", s=55, zorder=4, linewidths=0.8, edgecolors="black",
-                               facecolors="white" if e == "clickhouse" else "black")
+                    ax.scatter([p], c, marker="D", s=20, color=st["color"], edgecolor="black", lw=0.6, zorder=4)
         ax.set_yscale("log")
         plain_log_y(ax)
-        ax.set_xticks(range(len(QORDER)), [qlabel(q) for q in QORDER])
-        ax.set_title(f"SF{sf}")
-        ax.set_ylabel("Query latency (ms, log scale)" if sf == SFS[0] else "")
-        class_spans(ax, -0.09)
+        ax.set_ylabel(f"SF{sf}: latency\n(ms, log scale)")
         ax.grid(axis="y", which="major", color="0.88", lw=0.5)
-    handles = [Patch(facecolor=ENG[e]["color"], alpha=0.55, hatch=ENG[e]["hatch"], edgecolor="black",
-                     label=ENG[e]["label"] + " (20 warm runs)") for e in ENG]
-    handles.append(Line2D([], [], marker="*", mfc="white", mec="black", lw=0, markersize=9, label="ClickHouse cold run"))
-    handles.append(Line2D([], [], marker="*", mfc="black", mec="black", lw=0, markersize=9, label="DuckDB cold run"))
-    fig.legend(handles=handles, loc="lower center", ncol=2, bbox_to_anchor=(0.5, -0.13), frameon=False)
-    fig.tight_layout(rect=(0, 0.04, 1, 1))
+        ax.set_xlim(-0.6, len(QORDER) - 0.4)
+        start = 0
+        for cls in ["scan", "join", "aggregation"]:
+            n = sum(1 for q in QORDER if QCLASS[q] == cls)
+            if start:
+                ax.axvline(start - 0.5, color="0.75", lw=0.6, zorder=0)
+            start += n
+    axes[-1].set_xticks(range(len(QORDER)), [qlabel(q) for q in QORDER])
+    class_spans(axes[-1])
+    for ax in axes[:-1]:
+        ax.tick_params(axis="x", length=0)
+    handles = [Patch(facecolor=ENG[e]["color"], alpha=0.75, hatch=ENG[e]["hatch"], edgecolor="black",
+                     label=ENG[e]["label"] + ": 20 warm runs") for e in ENG]
+    handles += [Line2D([], [], marker="D", color=ENG[e]["color"], mec="black", mew=0.6, lw=0, markersize=4.5,
+                       label=f"{'ClickHouse' if e == 'clickhouse' else 'DuckDB'} cold run")
+                for e in ENG]
+    handles += [Line2D([], [], marker="o", mfc="none", mec="0.3", lw=0, markersize=3,
+                       label="warm outlier (> 1.5 IQR)")]
+    fig.legend(handles=handles, loc="upper center", ncol=3, bbox_to_anchor=(0.5, 1.07), frameon=False)
+    fig.tight_layout(h_pad=0.6)
     save(fig, "F1_latency")
 
 
+def spread_labels(ys, min_gap):
+    """Shift label positions (log10 units) apart by at least min_gap, keeping their order."""
+    order = np.argsort(ys)
+    out = np.array(ys, float)
+    for i in range(1, len(order)):
+        a, b = order[i - 1], order[i]
+        out[b] = max(out[b], out[a] + min_gap)
+    shift = (out - np.array(ys)).mean()  # re-centre the block around the data
+    return out - shift / 2
+
+
 def f2_scaling():
+    """Median warm latency against SF, one line per query, labelled at the line end with its slope b."""
     s = pd.read_csv(ST / "summary.csv")
-    fig, axes = plt.subplots(1, 2, figsize=(4.5, 2.3), sharey=True)
+    sc = pd.read_csv(ST / "scaling.csv").set_index(["engine", "query_id"])
+    fig, axes = plt.subplots(1, 2, figsize=(6.2, 3.0), sharey=True)
+    x = np.array(SFS, float)
+    label_ys = []
     for ax, e in zip(axes, ["clickhouse", "duckdb"]):
+        ends = []
         for q in QORDER:
             c, m, ls = QSTYLE[q]
             d = s[(s.engine == e) & (s.query_id == q)].sort_values("sf")
-            ax.plot(d.sf, d.warm_median_ms, color=c, marker=m, ls=ls, lw=1.3, ms=5.5, mec=c, mew=0.5, label=qlabel(q))
-        x = np.array(SFS, float)
+            ax.plot(d.sf, d.warm_median_ms, color=c, marker=m, ls=ls, lw=1.3, ms=5, mec=c, mew=0.5, zorder=3)
+            ends.append((q, float(d.warm_median_ms.iloc[-1]), c))
         y0 = s[s.engine == e].groupby("sf").warm_median_ms.median().loc[SFS[0]]
         ax.plot(x, y0 * x / x[0], color="black", lw=0.9, ls=(0, (6, 3)), zorder=5, label="slope 1 (linear)")
+        ly = spread_labels(np.log10([y for _, y, _ in ends]), 0.135)
+        for (q, y, c), yl in zip(ends, ly):
+            ax.annotate(f"Q{q}  b = {sc.loc[(e, q), 'slope_b']:.2f}", xy=(x[-1], y), xytext=(x[-1] * 1.3, 10 ** yl),
+                        fontsize=6.8, color="black", va="center", ha="left",
+                        arrowprops=dict(arrowstyle="-", color=c, lw=0.7, shrinkA=0, shrinkB=3, relpos=(0, 0.5)))
+        label_ys.extend(10 ** ly)
         ax.set_xscale("log"); ax.set_yscale("log")
         plain_log_y(ax)
         ax.set_xticks(SFS, [f"SF{v}" for v in SFS])
         ax.minorticks_off()
-        ax.set_xlim(0.8, 12.5)
+        ax.set_xlim(0.75, 45)
+        ax.spines["bottom"].set_bounds(1, 10)
         ax.set_title(ENG[e]["label"])
         ax.set_xlabel("Scale factor (log scale)")
         ax.grid(color="0.9", lw=0.5)
+        ax.legend(loc="upper left", frameon=False, fontsize=6.8, handlelength=2.5)
     axes[0].set_ylabel("Median warm latency (ms, log scale)")
-    h, l = axes[0].get_legend_handles_labels()
-    fig.legend(h, l, loc="center left", bbox_to_anchor=(1.0, 0.5), frameon=False)
+    lo = s.warm_median_ms.min() / 1.4
+    axes[0].set_ylim(lo, max(label_ys) * 1.25)  # shared y: room for every end label
     fig.tight_layout()
     save(fig, "F2_scaling")
 
@@ -221,7 +256,7 @@ def f5_repetitions():
     boot = allm[allm.method == "bootstrap"]
     fig, ax = plt.subplots(figsize=(2.85, 3.05))
     for (e, sf, q), b in d.groupby(["engine", "sf", "query_id"]):
-        ax.plot(b.n, 100 * b.rel_halfwidth, color=ENG[e]["color"], lw=0.5, alpha=0.35, ls="-" if e == "clickhouse" else "--")
+        ax.plot(b.n, 100 * b.rel_halfwidth, color="0.78", lw=0.5, zorder=1)
     for k, e in enumerate(["clickhouse", "duckdb"]):
         g = d[d.engine == e].groupby("n").rel_halfwidth.median() * 100
         ax.plot(g.index, g.values, color=ENG[e]["color"], marker=ENG[e]["marker"], lw=2, ls="-" if e == "clickhouse" else "--",
@@ -231,6 +266,7 @@ def f5_repetitions():
             label="bootstrap CI, median of 32\n(under-covers for n < 6)")
     ax.axvspan(2.5, 5.5, color="0.92", zorder=0)
     ax.text(4, 0.97, "n < 6:\nno exact\nCI", transform=ax.get_xaxis_transform(), ha="center", va="top", fontsize=6.3)
+    ax.plot([], [], color="0.78", lw=0.8, label="each engine, SF and query (32)")
     ax.axhline(5, color="black", ls=":", lw=1)
     ax.text(4, 4.6, "5 %", ha="center", va="top", fontsize=7)
     ax.set_yscale("log")
@@ -239,7 +275,7 @@ def f5_repetitions():
     ax.set_xlabel("Warm runs n (first n of 20)")
     ax.set_ylabel("Relative half-width of the\n95 % CI of the median (%)")
     ax.grid(color="0.9", lw=0.5)
-    ax.legend(frameon=False, loc="upper center", bbox_to_anchor=(0.45, -0.2), fontsize=6.5, ncol=1)
+    ax.legend(frameon=False, loc="upper center", bbox_to_anchor=(0.45, -0.27), fontsize=6.5, ncol=1)
     fig.tight_layout()
     save(fig, "F5_repetitions")
 

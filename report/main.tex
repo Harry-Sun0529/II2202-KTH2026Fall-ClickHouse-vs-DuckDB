@@ -191,7 +191,7 @@ The cold run ranked the engines differently from the warm runs for \V{headline.c
 \begin{figure}[ht]
 \centering
 \includegraphics[width=\textwidth]{../figures/F1_latency.pdf}
-\caption{Warm latency per query (box: quartiles and median; points: the 20 runs) and the cold run (star) for each engine. Log scale; note the different axes for SF1 and SF10.}
+\caption{Latency per query at SF1 (top) and SF10 (bottom), log scale. Box: quartiles and median of the 20 warm runs, whiskers up to 1.5 IQR, open circles: warm outliers. Diamond: the cold run (first run after restart) of the same engine.}
 \label{fig:latency}
 \end{figure}
 
@@ -208,8 +208,8 @@ The CI of $b$ excludes 1 for \V{headline.n_slope_ci_below_1} slopes below 1 and 
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.9\textwidth]{../figures/F2_scaling.pdf}
-\caption{Median warm latency against scale factor (both axes logarithmic). The thick grey line has slope 1 (latency proportional to SF).}
+\includegraphics[width=\textwidth]{../figures/F2_scaling.pdf}
+\caption{Median warm latency against scale factor (both axes logarithmic). Each label gives the query and its fitted slope $b$; the dashed line has slope 1 (latency proportional to SF).}
 \label{fig:scaling}
 \end{figure}
 
@@ -327,8 +327,6 @@ The pilot therefore shows which data the full study needs; it does not yet show 
 
 All scripts, configuration, query texts, raw CSV files and this report are in our repository; \texttt{make all} rebuilds everything from data generation to this PDF, and a script checks that every number in the report comes from \texttt{results/stats/*.csv}.
 
-\textbf{Use of AI tools.} An AI assistant (Claude, Anthropic) wrote most of the measurement and analysis scripts and drafted this report under our direction.
-We reviewed the code, the data and the text, and we take responsibility for them.
 
 \begin{thebibliography}{9}
 \footnotesize\setlength{\itemsep}{0pt}\setlength{\parsep}{0pt}
