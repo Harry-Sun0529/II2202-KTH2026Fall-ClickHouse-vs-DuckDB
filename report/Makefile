@@ -1,7 +1,7 @@
 # Build the report in the texlive container (no local TeX needed), then run the gates.
 IMG := texlive/texlive:latest
 ROOT := $(abspath ..)
-TEX := docker run --rm -v $(ROOT):/work -w /work/report $(IMG)
+TEX := docker run --rm -e SOURCE_DATE_EPOCH=1793750400 -e FORCE_SOURCE_DATE=1 -v $(ROOT):/work -w /work/report $(IMG)
 PY := ../.venv/bin/python
 
 .PHONY: all pdf numbers gates clean

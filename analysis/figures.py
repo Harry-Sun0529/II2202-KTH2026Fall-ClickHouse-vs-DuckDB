@@ -59,7 +59,7 @@ def plain_log_y(ax, subs=(1.0, 2.0, 5.0)):
 
 def save(fig, name):
     FIG.mkdir(exist_ok=True)
-    fig.savefig(FIG / f"{name}.pdf", bbox_inches="tight")
+    fig.savefig(FIG / f"{name}.pdf", bbox_inches="tight", metadata={"CreationDate": None})  # reproducible bytes
     fig.savefig(FIG / f"{name}.png", dpi=300, bbox_inches="tight")
     plt.close(fig)
 
