@@ -21,7 +21,7 @@ from common import (CFG, CH, DK, TABLES, CgroupSampler, ch_http, docker_client, 
 
 LOAD_CSV = ROOT / "results" / "load_runs.csv"
 LOAD_COLS = ["timestamp", "engine", "engine_version", "sf", "rep", "load_s", "finalize_s", "total_s",
-             "disk_bytes", "peak_mem_bytes", "watermark_bytes", "rows_total", "parts_after_load",
+             "disk_bytes", "peak_mem_bytes", "watermark_bytes", "peak_anon_bytes", "rows_total", "parts_after_load",
              "parts_after_finalize", "error"]
 
 CH_TYPES = {"INTEGER": "Int32", "BIGINT": "Int64", "DATE": "Date", "VARCHAR": "String"}
@@ -77,7 +77,7 @@ def load_clickhouse(sf: int, container) -> dict:
     disk = int(ch_http(f"SELECT sum(bytes_on_disk) FROM system.parts WHERE database='{db}' AND active", fmt="TSV")[0])
     rows = int(ch_http(f"SELECT sum(rows) FROM system.parts WHERE database='{db}' AND active", fmt="TSV")[0])
     return dict(load_s=load_ms / 1000, finalize_s=fin_ms / 1000, disk_bytes=disk, rows_total=rows,
-                peak_mem_bytes=s.max_current, watermark_bytes=s.watermark,
+                peak_mem_bytes=s.max_current, watermark_bytes=s.watermark, peak_anon_bytes=s.max_anon,
                 parts_after_load=parts_load, parts_after_finalize=parts_fin)
 
 
@@ -86,6 +86,7 @@ def load_duckdb(sf: int, container) -> dict:
         r = duck_call({"op": "load", "sf": sf})
     return dict(load_s=r["load_s"], finalize_s=r["checkpoint_s"], disk_bytes=r["disk_bytes"] + r["wal_bytes"],
                 rows_total=sum(r["rows"].values()), peak_mem_bytes=s.max_current, watermark_bytes=s.watermark,
+                peak_anon_bytes=s.max_anon,
                 parts_after_load="", parts_after_finalize="")
 
 
@@ -122,7 +123,7 @@ def main(sfs=None, reps=None) -> int:
                     fh.flush()
                     print(f"load {engine:10s} sf{sf:<3d} rep{rep} load={row.get('load_s', float('nan')):.2f}s "
                           f"final={row.get('finalize_s', float('nan')):.2f}s disk={row.get('disk_bytes', 0)/1e9:.3f}GB "
-                          f"peak={row.get('peak_mem_bytes', 0)/2**30:.2f}GiB err={row['error']}", flush=True)
+                          f"peak={row.get('peak_mem_bytes', 0)/2**30:.2f}GiB anon={row.get('peak_anon_bytes', 0)/2**30:.2f}GiB err={row['error']}", flush=True)
                 c.stop(timeout=30)
     return 0
 

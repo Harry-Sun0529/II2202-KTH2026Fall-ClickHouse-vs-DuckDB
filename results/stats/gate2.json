@@ -1,0 +1,122 @@
+{
+  "rows": 672,
+  "loads": 12,
+  "errors": 0,
+  "issues": [],
+  "notes": [],
+  "max_peak_gib": 4.885349273681641,
+  "scaling": [
+    {
+      "engine": "clickhouse",
+      "query_id": 1,
+      "sf1_ms": 104.898,
+      "sf10_ms": 1022.088,
+      "ok": true
+    },
+    {
+      "engine": "clickhouse",
+      "query_id": 3,
+      "sf1_ms": 60.9285,
+      "sf10_ms": 539.287,
+      "ok": true
+    },
+    {
+      "engine": "clickhouse",
+      "query_id": 5,
+      "sf1_ms": 61.108999999999995,
+      "sf10_ms": 523.4755,
+      "ok": true
+    },
+    {
+      "engine": "clickhouse",
+      "query_id": 6,
+      "sf1_ms": 33.634,
+      "sf10_ms": 292.426,
+      "ok": true
+    },
+    {
+      "engine": "clickhouse",
+      "query_id": 9,
+      "sf1_ms": 97.316,
+      "sf10_ms": 972.793,
+      "ok": true
+    },
+    {
+      "engine": "clickhouse",
+      "query_id": 13,
+      "sf1_ms": 62.071,
+      "sf10_ms": 610.1995,
+      "ok": true
+    },
+    {
+      "engine": "clickhouse",
+      "query_id": 18,
+      "sf1_ms": 82.9515,
+      "sf10_ms": 729.7175,
+      "ok": true
+    },
+    {
+      "engine": "clickhouse",
+      "query_id": 21,
+      "sf1_ms": 147.87,
+      "sf10_ms": 1794.6195,
+      "ok": true
+    },
+    {
+      "engine": "duckdb",
+      "query_id": 1,
+      "sf1_ms": 30.9865,
+      "sf10_ms": 290.4285,
+      "ok": true
+    },
+    {
+      "engine": "duckdb",
+      "query_id": 3,
+      "sf1_ms": 21.576,
+      "sf10_ms": 224.6025,
+      "ok": true
+    },
+    {
+      "engine": "duckdb",
+      "query_id": 5,
+      "sf1_ms": 24.566000000000003,
+      "sf10_ms": 221.08300000000003,
+      "ok": true
+    },
+    {
+      "engine": "duckdb",
+      "query_id": 6,
+      "sf1_ms": 14.323,
+      "sf10_ms": 137.975,
+      "ok": true
+    },
+    {
+      "engine": "duckdb",
+      "query_id": 9,
+      "sf1_ms": 72.7045,
+      "sf10_ms": 735.645,
+      "ok": true
+    },
+    {
+      "engine": "duckdb",
+      "query_id": 13,
+      "sf1_ms": 69.56,
+      "sf10_ms": 666.5540000000001,
+      "ok": true
+    },
+    {
+      "engine": "duckdb",
+      "query_id": 18,
+      "sf1_ms": 65.5875,
+      "sf10_ms": 741.203,
+      "ok": true
+    },
+    {
+      "engine": "duckdb",
+      "query_id": 21,
+      "sf1_ms": 49.730000000000004,
+      "sf10_ms": 447.84299999999996,
+      "ok": true
+    }
+  ]
+}

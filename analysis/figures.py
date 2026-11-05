@@ -1,0 +1,266 @@
+"""Stage 3: figures F1-F6 as vector PDFs (plus 300 dpi PNGs for inspection).
+
+Colour scheme: Okabe-Ito. Every series is also told apart by marker shape,
+line style or hatching, so the figures work in greyscale and for colour-blind
+readers. figures/check/ gets greyscale and deuteranopia renderings (check_figures.py).
+"""
+from __future__ import annotations
+
+from pathlib import Path
+
+import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt  # noqa: E402
+import numpy as np  # noqa: E402
+import pandas as pd  # noqa: E402
+import yaml  # noqa: E402
+from matplotlib.lines import Line2D  # noqa: E402
+from matplotlib.patches import Patch  # noqa: E402
+
+ROOT = Path(__file__).resolve().parents[1]
+ST = ROOT / "results" / "stats"
+FIG = ROOT / "figures"
+CFG = yaml.safe_load((ROOT / "config.yaml").read_text())
+QORDER = [q["id"] for q in CFG["queries"]]
+QCLASS = {q["id"]: q["class"] for q in CFG["queries"]}
+SFS = CFG["data"]["scale_factors"]
+GIB = 1024 ** 3
+
+OI = {"orange": "#E69F00", "sky": "#56B4E9", "green": "#009E73", "yellow": "#F0E442",
+      "blue": "#0072B2", "vermillion": "#D55E00", "purple": "#CC79A7", "black": "#000000"}
+ENG = {  # colour, marker, hatch, label
+    "clickhouse": dict(color=OI["orange"], marker="o", hatch="////", label="ClickHouse 26.8"),
+    "duckdb": dict(color=OI["blue"], marker="s", hatch="", label="DuckDB 2.0"),
+}
+QSTYLE = {  # per query: colour, marker, line style (8 Okabe-Ito colours incl. black)
+    1: (OI["black"], "o", "-"), 6: (OI["orange"], "s", "--"), 5: (OI["sky"], "^", "-."),
+    9: (OI["green"], "v", ":"), 21: (OI["blue"], "D", "-"), 3: (OI["vermillion"], "P", "--"),
+    13: (OI["purple"], "X", "-."), 18: (OI["yellow"], "*", ":"),
+}
+CLASS_LABEL = {"scan": "scan", "join": "join", "aggregation": "aggregation"}
+
+plt.rcParams.update({
+    "font.family": "DejaVu Sans", "font.size": 8.5, "axes.titlesize": 9, "axes.labelsize": 8.5,
+    "legend.fontsize": 7.5, "xtick.labelsize": 7.5, "ytick.labelsize": 7.5, "pdf.fonttype": 42,
+    "axes.spines.top": False, "axes.spines.right": False, "hatch.linewidth": 0.6,
+})
+W = 6.3  # inches, text width of the report
+
+
+def save(fig, name):
+    FIG.mkdir(exist_ok=True)
+    fig.savefig(FIG / f"{name}.pdf", bbox_inches="tight")
+    fig.savefig(FIG / f"{name}.png", dpi=300, bbox_inches="tight")
+    plt.close(fig)
+
+
+def runs():
+    r = pd.read_csv(ROOT / "results/raw_runs.csv", keep_default_na=False)
+    r["latency_ms"] = pd.to_numeric(r.latency_ms, errors="coerce")
+    r["ok"] = (r.error == "") & (r.result_ok.astype(str) == "True")
+    return r
+
+
+def qlabel(q):
+    return f"Q{q}"
+
+
+def class_spans(ax, y):
+    """Class names under the query labels."""
+    start = 0
+    for cls in ["scan", "join", "aggregation"]:
+        n = sum(1 for q in QORDER if QCLASS[q] == cls)
+        ax.text(start + (n - 1) / 2, y, CLASS_LABEL[cls], ha="center", va="top",
+                transform=ax.get_xaxis_transform(), fontsize=7.5, style="italic")
+        if start:
+            ax.axvline(start - 0.5, color="0.75", lw=0.6, zorder=0)
+        start += n
+
+
+def f1_latency(r):
+    fig, axes = plt.subplots(1, 2, figsize=(W, 3.0), sharey=False)
+    rng = np.random.default_rng(0)
+    for ax, sf in zip(axes, SFS):
+        for k, e in enumerate(["clickhouse", "duckdb"]):
+            st = ENG[e]
+            pos = np.arange(len(QORDER)) + (k - 0.5) * 0.38
+            data = [r[(r.engine == e) & (r.sf == sf) & (r.query_id == q) & (r.phase == "warm") & r.ok].latency_ms
+                    for q in QORDER]
+            bp = ax.boxplot(data, positions=pos, widths=0.32, patch_artist=True, showfliers=False,
+                            medianprops=dict(color="black", lw=1.1), whiskerprops=dict(lw=0.7),
+                            capprops=dict(lw=0.7), boxprops=dict(lw=0.7))
+            for b in bp["boxes"]:
+                b.set_facecolor(st["color"]); b.set_alpha(0.55); b.set_hatch(st["hatch"]); b.set_edgecolor("black")
+            for p, d in zip(pos, data):
+                ax.scatter(p + rng.uniform(-0.09, 0.09, len(d)), d, s=4, marker=st["marker"],
+                           facecolor="none" if e == "clickhouse" else st["color"], edgecolor=st["color"],
+                           lw=0.5, zorder=3)
+            cold = [r[(r.engine == e) & (r.sf == sf) & (r.query_id == q) & (r.phase == "cold") & r.ok].latency_ms for q in QORDER]
+            for p, c in zip(pos, cold):
+                if len(c):
+                    ax.scatter([p], c, marker="*", s=42, color="black", zorder=4)
+        ax.set_yscale("log")
+        ax.set_xticks(range(len(QORDER)), [qlabel(q) for q in QORDER])
+        ax.set_title(f"SF{sf}")
+        ax.set_ylabel("Query latency (ms, log scale)" if sf == SFS[0] else "")
+        class_spans(ax, -0.09)
+        ax.grid(axis="y", which="major", color="0.88", lw=0.5)
+    handles = [Patch(facecolor=ENG[e]["color"], alpha=0.55, hatch=ENG[e]["hatch"], edgecolor="black",
+                     label=ENG[e]["label"] + " (20 warm runs)") for e in ENG]
+    handles.append(Line2D([], [], marker="*", color="black", lw=0, markersize=8, label="cold run (after restart)"))
+    fig.legend(handles=handles, loc="lower center", ncol=3, bbox_to_anchor=(0.5, -0.07), frameon=False)
+    fig.tight_layout(rect=(0, 0.04, 1, 1))
+    save(fig, "F1_latency")
+
+
+def f2_scaling():
+    s = pd.read_csv(ST / "summary.csv")
+    fig, axes = plt.subplots(1, 2, figsize=(W, 2.9), sharey=True)
+    for ax, e in zip(axes, ["clickhouse", "duckdb"]):
+        for q in QORDER:
+            c, m, ls = QSTYLE[q]
+            d = s[(s.engine == e) & (s.query_id == q)].sort_values("sf")
+            ax.plot(d.sf, d.warm_median_ms, color=c, marker=m, ls=ls, lw=1.1, ms=5,
+                    mec="black" if q == 18 else c, mew=0.5, label=qlabel(q))
+        x = np.array(SFS, float)
+        y0 = s[s.engine == e].groupby("sf").warm_median_ms.median().loc[SFS[0]]
+        ax.plot(x, y0 * x / x[0], color="0.4", lw=2.2, alpha=0.35, label="slope 1 (linear)")
+        ax.set_xscale("log"); ax.set_yscale("log")
+        ax.set_xticks(SFS, [f"SF{v}" for v in SFS])
+        ax.minorticks_off()
+        ax.set_xlim(0.8, 12.5)
+        ax.set_title(ENG[e]["label"])
+        ax.set_xlabel("Scale factor (log scale)")
+        ax.grid(color="0.9", lw=0.5)
+    axes[0].set_ylabel("Median warm latency (ms, log scale)")
+    h, l = axes[0].get_legend_handles_labels()
+    fig.legend(h, l, loc="center left", bbox_to_anchor=(1.0, 0.5), frameon=False)
+    fig.tight_layout()
+    save(fig, "F2_scaling")
+
+
+def f3_memory():
+    s = pd.read_csv(ST / "summary.csv")
+    fig, axes = plt.subplots(1, 2, figsize=(W, 2.9), sharey=True)
+    for ax, sf in zip(axes, SFS):
+        for k, e in enumerate(["clickhouse", "duckdb"]):
+            st = ENG[e]
+            d = s[(s.engine == e) & (s.sf == sf)].set_index("query_id").loc[QORDER]
+            pos = np.arange(len(QORDER)) + (k - 0.5) * 0.4
+            ax.bar(pos, d.peak_median_bytes / GIB, width=0.38, color=st["color"], alpha=0.75,
+                   hatch=st["hatch"], edgecolor="black", lw=0.6, label=st["label"] + ": median peak")
+            ax.errorbar(pos, d.peak_median_bytes / GIB,
+                        yerr=[np.zeros(len(d)), (d.peak_max_bytes - d.peak_median_bytes) / GIB],
+                        fmt="none", ecolor="black", elinewidth=0.7, capsize=2)
+            ax.scatter(pos, d.baseline_cold_bytes / GIB, marker="_", s=60, color="black", lw=1.4, zorder=4,
+                       label="idle after restart" if k == 0 else None)
+        ax.axhline(7, color="black", ls="--", lw=0.9)
+        ax.axhline(8, color="black", ls=":", lw=1.1)
+        ax.text(len(QORDER) - 0.45, 7, "engine limit 7 GiB", ha="right", va="bottom", fontsize=7)
+        ax.text(len(QORDER) - 0.45, 8, "container limit 8 GiB", ha="right", va="bottom", fontsize=7)
+        ax.set_xticks(range(len(QORDER)), [qlabel(q) for q in QORDER])
+        ax.set_ylim(0, 8.7)
+        ax.set_title(f"SF{sf}")
+        class_spans(ax, -0.09)
+        ax.grid(axis="y", color="0.9", lw=0.5)
+    axes[0].set_ylabel("Container memory peak (GiB)")
+    h, l = axes[0].get_legend_handles_labels()
+    h.append(Line2D([], [], color="black", lw=0.7, marker="|", markersize=6, label="max over 21 runs"))
+    fig.legend(handles=h, loc="lower center", ncol=4, bbox_to_anchor=(0.5, -0.07), frameon=False)
+    fig.tight_layout(rect=(0, 0.04, 1, 1))
+    save(fig, "F3_memory")
+
+
+def f4_breakeven():
+    be = pd.read_csv(ST / "breakeven.csv")
+    be = be[be.load_basis == "total_s"]
+    fig, axes = plt.subplots(1, 2, figsize=(W, 2.7))
+    for ax, sf in zip(axes, SFS):
+        row = be[be.sf == sf].iloc[0]
+        nmax = max(10.0, 2.2 * row.n_star) if row.kind == "crossing" else 50.0
+        n = np.linspace(0, nmax, 200)
+        for e, L, q, ls in [("clickhouse", row.L_ch_s, row.q_ch_s, "-"), ("duckdb", row.L_duck_s, row.q_duck_s, "--")]:
+            st = ENG[e]
+            ax.plot(n, L + n * q, color=st["color"], ls=ls, lw=1.6, label=f"{st['label']}: T(n) = {L:.1f} + {q:.2f} n s")
+            ax.plot(n[::25], (L + n * q)[::25], color=st["color"], marker=st["marker"], lw=0, ms=4)
+        if row.kind == "crossing":
+            y = row.L_ch_s + row.n_star * row.q_ch_s
+            ax.axvline(row.n_star, color="black", lw=0.8, ls=":")
+            ax.annotate(f"n* = {row.n_star:.1f}", (row.n_star, y), xytext=(8, -18), textcoords="offset points", fontsize=7.5)
+        else:
+            who = "ClickHouse" if row.kind.startswith("clickhouse") else "DuckDB"
+            ax.text(0.03, 0.95, f"no crossing for n > 0:\n{who} cheaper for every n",
+                    transform=ax.transAxes, va="top", fontsize=7.5)
+        ax.set_xlabel("Executions n of the 8-query set")
+        ax.set_title(f"SF{sf}")
+        ax.set_xlim(0, nmax); ax.set_ylim(bottom=0)
+        ax.grid(color="0.9", lw=0.5)
+        ax.legend(loc="lower right", frameon=False, fontsize=6.8)
+    axes[0].set_ylabel("Total time T(n) (s)")
+    fig.tight_layout()
+    save(fig, "F4_breakeven")
+
+
+def f5_repetitions():
+    d = pd.read_csv(ST / "repetitions.csv")
+    fig, ax = plt.subplots(figsize=(W * 0.62, 2.6))
+    for (e, sf, q), b in d.groupby(["engine", "sf", "query_id"]):
+        ax.plot(b.n, 100 * b.rel_halfwidth, color=ENG[e]["color"], lw=0.5, alpha=0.35, ls="-" if e == "clickhouse" else "--")
+    for k, e in enumerate(["clickhouse", "duckdb"]):
+        g = d[d.engine == e].groupby("n").rel_halfwidth.median() * 100
+        ax.plot(g.index, g.values, color=ENG[e]["color"], marker=ENG[e]["marker"], lw=2, ls="-" if e == "clickhouse" else "--",
+                mfc="white" if e == "clickhouse" else ENG[e]["color"], label=ENG[e]["label"] + " (median of 16)")
+    ax.axhline(5, color="black", ls=":", lw=1)
+    ax.text(20.3, 5, "5 %", va="center", fontsize=7.5)
+    ax.set_yscale("log")
+    ax.set_xticks([3, 5, 10, 15, 20])
+    ax.set_xlabel("Warm runs n (first n of 20)")
+    ax.set_ylabel("Relative half-width of\n95 % CI of the median (%)")
+    ax.grid(color="0.9", lw=0.5)
+    ax.legend(frameon=False, loc="upper right")
+    fig.tight_layout()
+    save(fig, "F5_repetitions")
+
+
+def f6_pca():
+    sc = pd.read_csv(ST / "pca_scores.csv")
+    ld = pd.read_csv(ST / "pca_loadings.csv")
+    var = pd.read_csv(ST / "pca_variance.csv")
+    fig, ax = plt.subplots(figsize=(W * 0.62, 3.0))
+    cls_style = {"scan": (OI["orange"], "s"), "join": (OI["blue"], "^"), "aggregation": (OI["green"], "o")}
+    for cls, (c, m) in cls_style.items():
+        d = sc[sc.query_class == cls]
+        ax.scatter(d.pc1, d.pc2, color=c, marker=m, s=45, edgecolor="black", lw=0.6, label=cls, zorder=3)
+        for _, r in d.iterrows():
+            ax.annotate(f"Q{r.query_id}", (r.pc1, r.pc2), xytext=(4, 3), textcoords="offset points", fontsize=7.5)
+    scale = 0.8 * np.abs(sc[["pc1", "pc2"]]).to_numpy().max()
+    for _, r in ld.iterrows():
+        kind, e, sf = r.feature.split("_")
+        ax.annotate("", xy=(r.pc1 * scale, r.pc2 * scale), xytext=(0, 0),
+                    arrowprops=dict(arrowstyle="->", color="0.45" if kind == "lat" else "0.15", lw=0.7,
+                                    ls="-" if kind == "lat" else "--"))
+    ax.axhline(0, color="0.85", lw=0.5); ax.axvline(0, color="0.85", lw=0.5)
+    ax.set_xlabel(f"PC1 ({100 * var.explained[0]:.0f} % of variance)")
+    ax.set_ylabel(f"PC2 ({100 * var.explained[1]:.0f} %)")
+    h, l = ax.get_legend_handles_labels()
+    h += [Line2D([], [], color="0.45", lw=0.8, label="loading: log latency"),
+          Line2D([], [], color="0.15", lw=0.8, ls="--", label="loading: log peak memory")]
+    ax.legend(handles=h, frameon=False, fontsize=6.8, loc="best")
+    fig.tight_layout()
+    save(fig, "F6_pca")
+
+
+def main():
+    r = runs()
+    f1_latency(r)
+    f2_scaling()
+    f3_memory()
+    f4_breakeven()
+    f5_repetitions()
+    f6_pca()
+    print("figures written to", FIG)
+
+
+if __name__ == "__main__":
+    main()
