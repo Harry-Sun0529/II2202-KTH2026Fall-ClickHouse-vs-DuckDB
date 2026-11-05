@@ -156,15 +156,46 @@ def break_even_bootstrap(load_a, runs_a: list, load_b, runs_b: list,
 
 
 # ----------------------------------------------------------------- how much data
-def relative_halfwidth(x, B: int = B_DEFAULT, alpha: float = 0.05, seed: int = SEED) -> float:
-    m, lo, hi = bootstrap_median_ci(x, B, alpha, seed)
+def order_stat_k(n: int, alpha: float = 0.05):
+    """Largest k with P(Bin(n, 1/2) <= k - 1) <= alpha / 2, or None if no such k exists.
+
+    [x_(k), x_(n-k+1)] is then a distribution-free CI for the median with coverage
+    1 - 2 P(Bin(n, 1/2) <= k - 1) >= 1 - alpha (Le Boudec; Hoefler and Belli).
+    """
+    k = None
+    for cand in range(1, n // 2 + 1):
+        if sps.binom.cdf(cand - 1, n, 0.5) <= alpha / 2:
+            k = cand
+    return k
+
+
+def median_ci_order_stat(x, alpha: float = 0.05):
+    """Median, exact order-statistic CI and its coverage; NaNs if n is too small (n < 6 at 95 %)."""
+    x = np.sort(np.asarray(x, float))
+    k = order_stat_k(x.size, alpha)
+    if k is None:
+        return float(np.median(x)), np.nan, np.nan, np.nan
+    cov = 1 - 2 * sps.binom.cdf(k - 1, x.size, 0.5)
+    return float(np.median(x)), float(x[k - 1]), float(x[x.size - k]), float(cov)
+
+
+def relative_halfwidth(x, method: str = "order", B: int = B_DEFAULT, alpha: float = 0.05, seed: int = SEED) -> float:
+    if method == "bootstrap":
+        m, lo, hi = bootstrap_median_ci(x, B, alpha, seed)
+    else:
+        m, lo, hi, _ = median_ci_order_stat(x, alpha)
     return (hi - lo) / 2 / m
 
 
-def halfwidth_vs_n(x, ns=(3, 5, 10, 15, 20), B: int = B_DEFAULT, seed: int = SEED) -> dict:
-    """Relative CI half-width of the median if only the first n warm runs had been made."""
+def halfwidth_vs_n(x, ns=(3, 5, 10, 15, 20), method: str = "order", B: int = B_DEFAULT, seed: int = SEED) -> dict:
+    """Relative 95 % CI half-width of the median if only the first n warm runs had been made.
+
+    method="order" (default): exact distribution-free CI, NaN when n < 6.
+    method="bootstrap": percentile bootstrap; it under-covers badly at very small n
+    (at n = 3 the interval is the sample range, which covers the median only 75 % of the time).
+    """
     x = np.asarray(x, float)
-    return {n: relative_halfwidth(x[:n], B=B, seed=seed) for n in ns if n <= x.size}
+    return {n: relative_halfwidth(x[:n], method=method, B=B, seed=seed) for n in ns if n <= x.size}
 
 
 def min_n_for(widths: dict, target: float = 0.05):

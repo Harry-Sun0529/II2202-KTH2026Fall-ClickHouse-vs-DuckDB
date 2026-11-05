@@ -92,11 +92,42 @@ def test_loglog_slope_exact_linear_scaling():
     assert b == pytest.approx(2.0)
 
 
-def test_halfwidth_shrinks_with_n_and_min_n():
+def test_order_stat_ci_k_and_coverage():
+    # No 95 % order-statistic CI exists for n < 6; n = 6 uses [x(1), x(6)] (coverage 1 - 2/64).
+    assert S.order_stat_k(5) is None
+    assert S.order_stat_k(6) == 1
+    assert S.order_stat_k(20) == 6          # P(Bin(20, .5) <= 5) = 0.0207 <= 0.025
+    m, lo, hi, cov = S.median_ci_order_stat(np.arange(1, 21))
+    assert (lo, hi) == (6, 15) and cov == pytest.approx(1 - 2 * 0.020694, abs=1e-5)
+    assert np.isnan(S.median_ci_order_stat([1, 2, 3])[1])
+
+
+def test_order_stat_ci_covers_at_least_nominal_bootstrap_undercovers_at_n3():
+    rng = np.random.default_rng(11)
+    true_median = 1.0  # lognormal(0, s) has median exp(0) = 1
+    hit_order, hit_boot3, reps = 0, 0, 2000
+    for i in range(reps):
+        x = rng.lognormal(0, 0.3, 20)
+        _, lo, hi, _ = S.median_ci_order_stat(x)
+        hit_order += lo <= true_median <= hi
+        _, blo, bhi = S.bootstrap_median_ci(x[:3], B=400, seed=i)
+        hit_boot3 += blo <= true_median <= bhi
+    assert hit_order / reps >= 0.94          # exact coverage 0.9586
+    assert 0.70 <= hit_boot3 / reps <= 0.80  # theory: 1 - 2 (1/2)^3 = 0.75
+
+
+def test_halfwidth_vs_n_and_min_n():
     x = np.random.default_rng(2).lognormal(0, 0.1, 20)
-    w = S.halfwidth_vs_n(x, B=2000)
+    w = S.halfwidth_vs_n(x)
     assert set(w) == {3, 5, 10, 15, 20}
-    assert w[20] < w[3]
+    assert np.isnan(w[3]) and np.isnan(w[5]) and w[10] > 0 and w[20] > 0
+    # Averaged over many samples the exact CI narrows with n.
+    rng = np.random.default_rng(4)
+    ws = [S.halfwidth_vs_n(rng.lognormal(0, 0.1, 20)) for _ in range(300)]
+    assert np.mean([v[20] for v in ws]) < np.mean([v[10] for v in ws])
+    wb = S.halfwidth_vs_n(x, method="bootstrap", B=2000)
+    assert all(np.isfinite(v) for v in wb.values())
+    assert S.min_n_for({3: np.nan, 5: np.nan, 10: 0.04, 15: 0.03}) == 10
     assert S.min_n_for({3: 0.2, 5: 0.06, 10: 0.04, 15: 0.03}) == 10
     assert np.isnan(S.min_n_for({3: 0.2, 5: 0.1}))
 

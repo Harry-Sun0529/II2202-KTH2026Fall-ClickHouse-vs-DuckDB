@@ -1,0 +1,17 @@
+id,expectation,metric,value
+E1,Latency positive and right-skewed (long tail),share of combos with skewness > 0,1.0
+E1b,Latency positive and right-skewed (long tail),median max/median ratio of warm runs,1.293345432400156
+E2,Cold clearly slower than warm,share of combos with cold > warm median,1.0
+E2b,Cold clearly slower than warm,median cold/warm ratio,2.254393342202191
+E3,Warm CV below 10 %,share of combos with CV < 0.10,0.59375
+E3b,Warm CV below 10 %,max CV,0.22765498007200544
+E4,Latency roughly linear in SF (log-log slope ~ 1),share of engine x query with 0.8 <= b <= 1.2,1.0
+E4b,Latency roughly linear in SF (log-log slope ~ 1),median slope b,0.9826210882286206
+E5,ClickHouse faster on join and aggregation queries,share of join+aggregation comparisons where ClickHouse is faster,0.25
+E5b,ClickHouse faster on scan queries (H1 of the plan),share of scan comparisons where ClickHouse is faster,0.0
+E6,DuckDB loads faster,SFs where DuckDB median total load < ClickHouse,2.0
+E7,DuckDB has lower idle memory,SFs where DuckDB idle (after restart) < ClickHouse,2.0
+E8,Peak memory grows with SF but stays below 7 GiB,max cgroup peak over all runs (GiB),4.885349273681641
+E8b,Peak memory grows with SF but stays below 7 GiB,share of engine x query with higher median peak at SF10,1.0
+E8c,"Over the limit: spill, not OOM",runs with an error,0.0
+E9,ClickHouse disk footprint <= DuckDB (or similar),SFs where ClickHouse disk < DuckDB disk,0.0

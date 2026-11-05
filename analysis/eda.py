@@ -22,7 +22,7 @@ QORDER = [q["id"] for q in CFG["queries"]]
 QCLASS = {q["id"]: q["class"] for q in CFG["queries"]}
 ENGINES = ["clickhouse", "duckdb"]
 GIB = 1024 ** 3
-NS = (3, 5, 10, 15, 20)
+NS = (3, 5, 6, 10, 15, 20)  # plan's n values plus 6, the smallest n with an exact 95 % median CI
 
 
 def load_runs() -> pd.DataFrame:
@@ -42,12 +42,13 @@ def summary(r: pd.DataFrame) -> pd.DataFrame:
         cold = b[b.phase == "cold"].iloc[0]
         w = warm.latency_ms.to_numpy()
         m, lo, hi = S.bootstrap_median_ci(w)
+        _, olo, ohi, ocov = S.median_ci_order_stat(w)
         widths = S.halfwidth_vs_n(w, NS)
         rows.append(dict(
             engine=e, sf=sf, query_id=q, query_class=QCLASS[q],
             n_warm_ok=len(w), n_errors=int((b.error != "").sum()),
             cold_ms=cold.latency_ms if cold.ok else np.nan, cold_error=cold.error,
-            warm_median_ms=m, ci_lo_ms=lo, ci_hi_ms=hi,
+            warm_median_ms=m, ci_lo_ms=lo, ci_hi_ms=hi, os_ci_lo_ms=olo, os_ci_hi_ms=ohi, os_ci_coverage=ocov,
             warm_q1_ms=np.quantile(w, 0.25), warm_q3_ms=np.quantile(w, 0.75),
             warm_min_ms=w.min(), warm_max_ms=w.max(),
             cv_warm=S.cv(w), skew_warm=float(sps.skew(w)), shapiro_p=S.shapiro_p(w),
@@ -143,15 +144,18 @@ def breakeven(r: pd.DataFrame, loads: pd.DataFrame) -> pd.DataFrame:
 
 
 def repetitions(r: pd.DataFrame):
+    """CI half-width if only the first n warm runs had been made, for both CI methods."""
     rows = []
     for (e, sf, q), b in r[(r.phase == "warm") & r.ok].sort_values("run_idx").groupby(["engine", "sf", "query_id"]):
-        for n, w in S.halfwidth_vs_n(b.latency_ms.to_numpy(), NS).items():
-            rows.append(dict(engine=e, sf=sf, query_id=q, n=n, rel_halfwidth=w))
+        for method in ("order", "bootstrap"):
+            for n, w in S.halfwidth_vs_n(b.latency_ms.to_numpy(), NS, method=method).items():
+                rows.append(dict(method=method, engine=e, sf=sf, query_id=q, n=n, rel_halfwidth=w))
     d = pd.DataFrame(rows)
-    agg = d.groupby("n").rel_halfwidth.agg(
+    # NaN (no exact CI possible) counts as "not below 5 %".
+    agg = d.groupby(["method", "n"]).rel_halfwidth.agg(
         median="median", q1=lambda x: x.quantile(0.25), q3=lambda x: x.quantile(0.75), max="max",
         share_below_5pct=lambda x: (x < 0.05).mean(), share_below_2pct=lambda x: (x < 0.02).mean()).reset_index()
-    by_engine = d.groupby(["engine", "n"]).rel_halfwidth.agg(
+    by_engine = d.groupby(["method", "engine", "sf", "n"]).rel_halfwidth.agg(
         median="median", max="max", share_below_5pct=lambda x: (x < 0.05).mean()).reset_index()
     return d, agg, by_engine
 

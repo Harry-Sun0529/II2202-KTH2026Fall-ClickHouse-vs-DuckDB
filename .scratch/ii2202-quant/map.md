@@ -26,10 +26,12 @@ plus a repository that re-runs the whole pipeline with `make all`.
 - [04 Queries and correctness gate](issues/04-queries-correctness.md) — all 8 queries run unchanged on both engines except Q13 on ClickHouse (join_use_nulls = 1); both engines match the reference at SF1 and each other at SF10.
 - [05 Measurement harness](issues/05-harness.md) — cgroup sampling at ~3 ms for both engines, checked against memory.peak; failures recorded and recovered.
 - [06 Full pilot campaign](issues/06-campaign.md) — 672 runs + 12 loads, 0 errors, all results correct; peaks <= 4.89 GiB for queries, so no spill thresholds were tested.
+- [07 Statistics module and tests](issues/07-stats.md) — 13 tests pass; bootstrap CIs under-cover at n < 6, so the repetition analysis uses exact order-statistic CIs.
+- [08 EDA and figures](issues/08-eda-figures.md) — 14 stats tables and F1-F6, checked at 300 dpi, greyscale and deuteranopia; one silently dropped PCA arrow fixed.
 
 ## Not yet specified
 
-- Wording of the "how much data is needed" section — depends on observed CV.
+- Wording of the report's results and discussion (ticket 09).
 
 ## Out of scope
 

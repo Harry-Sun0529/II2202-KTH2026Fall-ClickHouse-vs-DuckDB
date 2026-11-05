@@ -17,6 +17,7 @@ import pandas as pd  # noqa: E402
 import yaml  # noqa: E402
 from matplotlib.lines import Line2D  # noqa: E402
 from matplotlib.patches import Patch  # noqa: E402
+from matplotlib.ticker import FuncFormatter, LogLocator, NullFormatter  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 ST = ROOT / "results" / "stats"
@@ -46,6 +47,13 @@ plt.rcParams.update({
     "axes.spines.top": False, "axes.spines.right": False, "hatch.linewidth": 0.6,
 })
 W = 6.3  # inches, text width of the report
+
+
+def plain_log_y(ax, subs=(1.0, 2.0, 5.0)):
+    """Log axis labelled with plain numbers (20, 50, 100, ...) instead of 2 x 10^1."""
+    ax.yaxis.set_major_locator(LogLocator(base=10, subs=subs))
+    ax.yaxis.set_major_formatter(FuncFormatter(lambda v, _: f"{v:g}"))
+    ax.yaxis.set_minor_formatter(NullFormatter())
 
 
 def save(fig, name):
@@ -101,6 +109,7 @@ def f1_latency(r):
                 if len(c):
                     ax.scatter([p], c, marker="*", s=42, color="black", zorder=4)
         ax.set_yscale("log")
+        plain_log_y(ax)
         ax.set_xticks(range(len(QORDER)), [qlabel(q) for q in QORDER])
         ax.set_title(f"SF{sf}")
         ax.set_ylabel("Query latency (ms, log scale)" if sf == SFS[0] else "")
@@ -108,7 +117,7 @@ def f1_latency(r):
         ax.grid(axis="y", which="major", color="0.88", lw=0.5)
     handles = [Patch(facecolor=ENG[e]["color"], alpha=0.55, hatch=ENG[e]["hatch"], edgecolor="black",
                      label=ENG[e]["label"] + " (20 warm runs)") for e in ENG]
-    handles.append(Line2D([], [], marker="*", color="black", lw=0, markersize=8, label="cold run (after restart)"))
+    handles.append(Line2D([], [], marker="*", color="black", lw=0, markersize=8, label="cold run, next to its engine's box"))
     fig.legend(handles=handles, loc="lower center", ncol=3, bbox_to_anchor=(0.5, -0.07), frameon=False)
     fig.tight_layout(rect=(0, 0.04, 1, 1))
     save(fig, "F1_latency")
@@ -127,6 +136,7 @@ def f2_scaling():
         y0 = s[s.engine == e].groupby("sf").warm_median_ms.median().loc[SFS[0]]
         ax.plot(x, y0 * x / x[0], color="0.4", lw=2.2, alpha=0.35, label="slope 1 (linear)")
         ax.set_xscale("log"); ax.set_yscale("log")
+        plain_log_y(ax)
         ax.set_xticks(SFS, [f"SF{v}" for v in SFS])
         ax.minorticks_off()
         ax.set_xlim(0.8, 12.5)
@@ -175,7 +185,7 @@ def f3_memory():
 def f4_breakeven():
     be = pd.read_csv(ST / "breakeven.csv")
     be = be[be.load_basis == "total_s"]
-    fig, axes = plt.subplots(1, 2, figsize=(W, 2.7))
+    fig, axes = plt.subplots(1, 2, figsize=(W, 3.1))
     for ax, sf in zip(axes, SFS):
         row = be[be.sf == sf].iloc[0]
         nmax = max(10.0, 2.2 * row.n_star) if row.kind == "crossing" else 50.0
@@ -196,29 +206,37 @@ def f4_breakeven():
         ax.set_title(f"SF{sf}")
         ax.set_xlim(0, nmax); ax.set_ylim(bottom=0)
         ax.grid(color="0.9", lw=0.5)
-        ax.legend(loc="lower right", frameon=False, fontsize=6.8)
+        ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.22), frameon=False, fontsize=6.8)
     axes[0].set_ylabel("Total time T(n) (s)")
     fig.tight_layout()
     save(fig, "F4_breakeven")
 
 
 def f5_repetitions():
-    d = pd.read_csv(ST / "repetitions.csv")
-    fig, ax = plt.subplots(figsize=(W * 0.62, 2.6))
+    allm = pd.read_csv(ST / "repetitions.csv")
+    d = allm[allm.method == "order"].dropna(subset=["rel_halfwidth"])
+    boot = allm[allm.method == "bootstrap"]
+    fig, ax = plt.subplots(figsize=(W * 0.62, 3.2))
     for (e, sf, q), b in d.groupby(["engine", "sf", "query_id"]):
         ax.plot(b.n, 100 * b.rel_halfwidth, color=ENG[e]["color"], lw=0.5, alpha=0.35, ls="-" if e == "clickhouse" else "--")
     for k, e in enumerate(["clickhouse", "duckdb"]):
         g = d[d.engine == e].groupby("n").rel_halfwidth.median() * 100
         ax.plot(g.index, g.values, color=ENG[e]["color"], marker=ENG[e]["marker"], lw=2, ls="-" if e == "clickhouse" else "--",
-                mfc="white" if e == "clickhouse" else ENG[e]["color"], label=ENG[e]["label"] + " (median of 16)")
+                mfc="white" if e == "clickhouse" else ENG[e]["color"], label=ENG[e]["label"] + ": exact CI, median of 16")
+    gb = boot.groupby("n").rel_halfwidth.median() * 100
+    ax.plot(gb.index, gb.values, color="0.35", lw=1, ls=(0, (1, 1)), marker="x", ms=4,
+            label="bootstrap CI, median of 32 (under-covers for n < 6)")
+    ax.axvspan(2.5, 5.5, color="0.92", zorder=0)
+    ax.text(4, 0.97, "no exact 95 % CI\nfor n < 6", transform=ax.get_xaxis_transform(), ha="center", va="top", fontsize=6.8)
     ax.axhline(5, color="black", ls=":", lw=1)
     ax.text(20.3, 5, "5 %", va="center", fontsize=7.5)
     ax.set_yscale("log")
-    ax.set_xticks([3, 5, 10, 15, 20])
+    plain_log_y(ax)
+    ax.set_xticks([3, 5, 6, 10, 15, 20])
     ax.set_xlabel("Warm runs n (first n of 20)")
-    ax.set_ylabel("Relative half-width of\n95 % CI of the median (%)")
+    ax.set_ylabel("Relative half-width of the\n95 % CI of the median (%)")
     ax.grid(color="0.9", lw=0.5)
-    ax.legend(frameon=False, loc="upper right")
+    ax.legend(frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.24), fontsize=6.8, ncol=1)
     fig.tight_layout()
     save(fig, "F5_repetitions")
 
@@ -227,7 +245,7 @@ def f6_pca():
     sc = pd.read_csv(ST / "pca_scores.csv")
     ld = pd.read_csv(ST / "pca_loadings.csv")
     var = pd.read_csv(ST / "pca_variance.csv")
-    fig, ax = plt.subplots(figsize=(W * 0.62, 3.0))
+    fig, ax = plt.subplots(figsize=(W * 0.85, 3.0))
     cls_style = {"scan": (OI["orange"], "s"), "join": (OI["blue"], "^"), "aggregation": (OI["green"], "o")}
     for cls, (c, m) in cls_style.items():
         d = sc[sc.query_class == cls]
@@ -235,18 +253,31 @@ def f6_pca():
         for _, r in d.iterrows():
             ax.annotate(f"Q{r.query_id}", (r.pc1, r.pc2), xytext=(4, 3), textcoords="offset points", fontsize=7.5)
     scale = 0.8 * np.abs(sc[["pc1", "pc2"]]).to_numpy().max()
+    groups = {}
     for _, r in ld.iterrows():
         kind, e, sf = r.feature.split("_")
-        ax.annotate("", xy=(r.pc1 * scale, r.pc2 * scale), xytext=(0, 0),
+        ax.annotate("", xy=(r.pc1 * scale, r.pc2 * scale), xytext=(0, 0), annotation_clip=False,
                     arrowprops=dict(arrowstyle="->", color="0.45" if kind == "lat" else "0.15", lw=0.7,
                                     ls="-" if kind == "lat" else "--"))
+        key = ("latency " + ("ClickHouse" if e == "clickhouse" else "DuckDB")) if kind == "lat" else "peak memory"
+        groups.setdefault(key, []).append((r.pc1 * scale, r.pc2 * scale))
+    for key, pts in groups.items():
+        x, y = max(pts, key=lambda p: abs(p[1])) if key != "latency DuckDB" else np.mean(pts, axis=0)
+        off, ha = {"peak memory": ((6, -2), "left"), "latency DuckDB": ((-4, -10), "right"),
+                   "latency ClickHouse": ((-6, -4), "right")}[key]
+        ax.annotate(key, (x, y), xytext=off, textcoords="offset points",
+                    ha=ha, fontsize=6.5, color="0.25", style="italic")
+    # Axis limits must include every arrow tip, or matplotlib silently drops that arrow.
+    allx = np.r_[sc.pc1, ld.pc1 * scale]; ally = np.r_[sc.pc2, ld.pc2 * scale]
+    padx, pady = 0.12 * np.ptp(allx), 0.12 * np.ptp(ally)
+    ax.set_xlim(allx.min() - padx, allx.max() + padx); ax.set_ylim(ally.min() - pady, ally.max() + pady)
     ax.axhline(0, color="0.85", lw=0.5); ax.axvline(0, color="0.85", lw=0.5)
     ax.set_xlabel(f"PC1 ({100 * var.explained[0]:.0f} % of variance)")
     ax.set_ylabel(f"PC2 ({100 * var.explained[1]:.0f} %)")
     h, l = ax.get_legend_handles_labels()
     h += [Line2D([], [], color="0.45", lw=0.8, label="loading: log latency"),
           Line2D([], [], color="0.15", lw=0.8, ls="--", label="loading: log peak memory")]
-    ax.legend(handles=h, frameon=False, fontsize=6.8, loc="best")
+    ax.legend(handles=h, frameon=False, fontsize=6.8, loc="center left", bbox_to_anchor=(1.0, 0.5))
     fig.tight_layout()
     save(fig, "F6_pca")
 

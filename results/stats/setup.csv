@@ -1,0 +1,27 @@
+key,value
+cpu_model,Apple M1 Pro
+host_cores,8
+host_perf_cores,6
+host_eff_cores,2
+host_mem_gib,16.0
+macos,15.7.9
+docker_version,29.0.1
+docker_vm_mem_mib,10240
+docker_vm_cpus,8
+kernel,6.12.54-linuxkit
+clickhouse_version,26.8.36.3
+duckdb_version,2.0.0
+ch_max_server_memory_usage,7516192768
+ch_max_threads,4
+ch_external_group_by,3221225472
+ch_external_sort,3221225472
+ch_join_algorithm,"direct,parallel_hash,hash,ie_join"
+duck_memory_limit,7.0 GiB
+duck_threads,4
+duck_temp_directory,/tmp/duck_spill
+sf1_lineitem_rows,6001215
+sf1_total_rows,8661245
+sf1_parquet_bytes,323379465
+sf10_lineitem_rows,59986052
+sf10_total_rows,86586082
+sf10_parquet_bytes,3419306007
