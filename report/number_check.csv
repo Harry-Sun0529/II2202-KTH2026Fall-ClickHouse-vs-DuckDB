@@ -1,0 +1,397 @@
+token,status,source
+29.0.1,ok,setup.csv (string)
+6.12.54-linuxkit,ok,setup.csv (string)
+26.8.36.3,ok,setup.csv (string)
+2.0.0,ok,setup.csv (string)
+8,constant,8 GiB container limit; 8 queries; 8 cold runs in the research plan
+8,constant,8 GiB container limit; 8 queries; 8 cold runs in the research plan
+1,constant,SF1; slope 1; join_use_nulls = 1; 'n > 0' style bounds
+10,constant,SF10; 10 % CV threshold (plan 5.1); n = 10
+"8,661,245",ok,load_summary.csv[0].rows_total (identity)
+0.32,ok,repetitions.csv[78].rel_halfwidth (identity)
+"86,586,082",ok,load_summary.csv[1].rows_total (identity)
+3.42,ok,load_summary.csv[1].parquet_bytes (GB)
+1,constant,SF1; slope 1; join_use_nulls = 1; 'n > 0' style bounds
+0,constant,ClickHouse fills unmatched rows with 0 (explanation of the Q13 edit); 0 in join_use_nulls context
+4,constant,4 CPUs / 4 threads (config.yaml container_limits.cpus)
+8,constant,8 GiB container limit; 8 queries; 8 cold runs in the research plan
+16,ok,headline.csv[0].value (identity)
+10240,ok,setup.csv[7].value (text) (identity)
+3.12,constant,python:3.12-slim base image (docker/duckdb/Dockerfile)
+8,constant,8 GiB container limit; 8 queries; 8 cold runs in the research plan
+4,constant,4 CPUs / 4 threads (config.yaml container_limits.cpus)
+7,constant,7 GiB engine memory limit (config.yaml)
+7,constant,7 GiB engine memory limit (config.yaml)
+4,constant,4 CPUs / 4 threads (config.yaml container_limits.cpus)
+4,constant,4 CPUs / 4 threads (config.yaml container_limits.cpus)
+3,constant,3 loads per engine and SF (config.yaml repetitions.load); n = 3; 3 GiB spill threshold
+20,constant,20 warm runs (config.yaml repetitions.warm); n = 20
+672,ok,headline.csv[44].value (identity)
+12,constant,12 loads = 2 engines x 2 SF x 3 (config.yaml)
+"1,",constant,SF1; slope 1; join_use_nulls = 1; 'n > 0' style bounds
+10,constant,SF10; 10 % CV threshold (plan 5.1); n = 10
+10,constant,SF10; 10 % CV threshold (plan 5.1); n = 10
+1,constant,SF1; slope 1; join_use_nulls = 1; 'n > 0' style bounds
+7,constant,7 GiB engine memory limit (config.yaml)
+672,ok,headline.csv[44].value (identity)
+12,constant,12 loads = 2 engines x 2 SF x 3 (config.yaml)
+8,constant,8 GiB container limit; 8 queries; 8 cold runs in the research plan
+2,constant,sampling interval 2 ms (config.yaml memory_sampler.interval_ms); 'two' style counts
+3.5,ok,breakeven.csv[2].q_duck_s (identity)
+4.8,ok,memory_check.csv[0].max_interval_ms (identity)
+1,constant,SF1; slope 1; join_use_nulls = 1; 'n > 0' style bounds
+99.7,ok,memory_check.csv[0].share_gap_below_1pct (percent)
+2.0,ok,comparison.csv[1].cold_ratio_ch_over_duck (identity)
+20,constant,20 warm runs (config.yaml repetitions.warm); n = 20
+95,constant,95 % confidence level
+10000,constant,"10,000 bootstrap resamples (analysis/stats.py B_DEFAULT)"
+0,constant,ClickHouse fills unmatched rows with 0 (explanation of the Q13 edit); 0 in join_use_nulls context
+95,constant,95 % confidence level
+"3,",constant,3 loads per engine and SF (config.yaml repetitions.load); n = 3; 3 GiB spill threshold
+"5,",constant,5 % target half-width (plan 5.3 item 5); n = 5; 5 loads recommended (research plan)
+"6,",constant,"n = 6, smallest n with an exact 95 % CI (order_stat_k(6) = 1, tested)"
+"10,",constant,SF10; 10 % CV threshold (plan 5.1); n = 10
+"15,",constant,n = 15 (plan 5.3 item 5)
+20,constant,20 warm runs (config.yaml repetitions.warm); n = 20
+5,constant,5 % target half-width (plan 5.3 item 5); n = 5; 5 loads recommended (research plan)
+6,constant,"n = 6, smallest n with an exact 95 % CI (order_stat_k(6) = 1, tested)"
+3,constant,3 loads per engine and SF (config.yaml repetitions.load); n = 3; 3 GiB spill threshold
+75,constant,theoretical coverage 1 - 2 (1/2)^3 = 75 % of the bootstrap CI at n = 3 (tested in test_stats.py)
+13,ok,comparison.csv[6].query_id (identity)
+16,ok,headline.csv[0].value (identity)
+1.26,ok,comparison.csv[7].ratio_ch_over_duck (identity)
+4.01,ok,comparison.csv[12].ratio_ch_over_duck (identity)
+0.89,ok,comparison.csv[6].ratio_ch_over_duck (identity)
+0.92,ok,comparison.csv[14].ratio_ch_over_duck (identity)
+0.98,ok,comparison.csv[15].ratio_ch_over_duck (identity)
+0.93,ok,comparison.csv[15].ratio_lo (identity)
+1.02,ok,comparison.csv[15].ratio_hi (identity)
+0.29,ok,comparison.csv[15].p (identity)
+15,constant,n = 15 (plan 5.3 item 5)
+0.0001,ok,comparison.csv[14].p_holm (identity)
+2.97,ok,comparison.csv[4].ratio_ch_over_duck (identity)
+3,constant,3 loads per engine and SF (config.yaml repetitions.load); n = 3; 3 GiB spill threshold
+0.87,ok,comparison.csv[6].ratio_lo (identity)
+0.93,ok,comparison.csv[15].ratio_lo (identity)
+0.8,ok,comparison.csv[7].speedup_duck_over_ch (identity)
+20,constant,20 warm runs (config.yaml repetitions.warm); n = 20
+20,constant,20 warm runs (config.yaml repetitions.warm); n = 20
+95,constant,95 % confidence level
+95,constant,95 % confidence level
+1,constant,SF1; slope 1; join_use_nulls = 1; 'n > 0' style bounds
+105,ok,comparison.csv[0].ch_median_ms (identity)
+"103,",ok,summary.csv[21].cold_ms (identity)
+107,ok,summary.csv[0].ci_hi_ms (identity)
+31.0,ok,comparison.csv[0].duck_median_ms (identity)
+30.8,ok,summary.csv[16].ci_lo_ms (identity)
+31.1,ok,summary.csv[16].ci_hi_ms (identity)
+3.39,ok,comparison.csv[0].ratio_ch_over_duck (identity)
+3.32,ok,comparison.csv[0].ratio_lo (identity)
+3.47,ok,breakeven.csv[2].q_duck_s (identity)
+0.001,constant,display bound '< 0.001' for p-values in Table 3
+1.00,ok,breakeven.csv[0].sf (identity)
+1,constant,SF1; slope 1; join_use_nulls = 1; 'n > 0' style bounds
+33.6,ok,comparison.csv[1].ch_median_ms (identity)
+32.8,ok,summary.csv[3].ci_lo_ms (identity)
+35.0,ok,summary.csv[3].ci_hi_ms (identity)
+14.3,ok,comparison.csv[1].duck_median_ms (identity)
+14.2,ok,summary.csv[19].ci_lo_ms (identity)
+14.4,ok,summary.csv[19].ci_hi_ms (identity)
+2.35,ok,comparison.csv[1].ratio_ch_over_duck (identity)
+2.29,ok,comparison.csv[1].ratio_lo (identity)
+2.45,ok,comparison.csv[1].ratio_hi (identity)
+0.001,constant,display bound '< 0.001' for p-values in Table 3
+1.00,ok,breakeven.csv[0].sf (identity)
+1,constant,SF1; slope 1; join_use_nulls = 1; 'n > 0' style bounds
+61.1,ok,comparison.csv[2].ch_median_ms (identity)
+59.6,ok,summary.csv[2].ci_lo_ms (identity)
+68.2,ok,summary.csv[2].ci_hi_ms (identity)
+24.6,ok,comparison.csv[2].duck_median_ms (identity)
+24.1,ok,summary.csv[18].ci_lo_ms (identity)
+24.8,ok,summary.csv[18].ci_hi_ms (identity)
+2.49,ok,comparison.csv[2].ratio_ch_over_duck (identity)
+2.42,ok,comparison.csv[2].ratio_lo (identity)
+2.78,ok,comparison.csv[2].ratio_hi (identity)
+0.001,constant,display bound '< 0.001' for p-values in Table 3
+1.00,ok,breakeven.csv[0].sf (identity)
+1,constant,SF1; slope 1; join_use_nulls = 1; 'n > 0' style bounds
+97.3,ok,comparison.csv[3].ch_median_ms (identity)
+96.1,ok,summary.csv[4].ci_lo_ms (identity)
+100,ok,summary.csv[4].ci_hi_ms (identity)
+72.7,ok,comparison.csv[3].duck_median_ms (identity)
+68.7,ok,summary.csv[20].ci_lo_ms (identity)
+74.4,ok,summary.csv[20].ci_hi_ms (identity)
+1.34,ok,comparison.csv[3].ratio_ch_over_duck (identity)
+1.31,ok,comparison.csv[3].ratio_lo (identity)
+1.43,ok,comparison.csv[3].ratio_hi (identity)
+0.001,constant,display bound '< 0.001' for p-values in Table 3
+0.90,ok,comparison.csv[3].cliffs_delta (identity)
+1,constant,SF1; slope 1; join_use_nulls = 1; 'n > 0' style bounds
+148,ok,comparison.csv[4].ch_median_ms (identity)
+"147,",ok,summary.csv[7].ci_lo_ms (identity)
+151,ok,summary.csv[7].ci_hi_ms (identity)
+49.7,ok,comparison.csv[4].duck_median_ms (identity)
+49.0,ok,summary.csv[23].ci_lo_ms (identity)
+50.9,ok,summary.csv[23].ci_hi_ms (identity)
+2.97,ok,comparison.csv[4].ratio_ch_over_duck (identity)
+2.90,ok,comparison.csv[4].ratio_lo (identity)
+3.05,ok,breakeven.csv[1].L_duck_s (identity)
+0.001,constant,display bound '< 0.001' for p-values in Table 3
+1.00,ok,breakeven.csv[0].sf (identity)
+1,constant,SF1; slope 1; join_use_nulls = 1; 'n > 0' style bounds
+60.9,ok,comparison.csv[5].ch_median_ms (identity)
+58.1,ok,summary.csv[1].ci_lo_ms (identity)
+62.9,ok,summary.csv[1].ci_hi_ms (identity)
+21.6,ok,comparison.csv[5].duck_median_ms (identity)
+21.3,ok,summary.csv[17].ci_lo_ms (identity)
+21.8,ok,summary.csv[17].ci_hi_ms (identity)
+2.82,ok,comparison.csv[5].ratio_ch_over_duck (identity)
+2.68,ok,comparison.csv[5].ratio_lo (identity)
+2.93,ok,comparison.csv[5].ratio_hi (identity)
+0.001,constant,display bound '< 0.001' for p-values in Table 3
+1.00,ok,breakeven.csv[0].sf (identity)
+1,constant,SF1; slope 1; join_use_nulls = 1; 'n > 0' style bounds
+62.1,ok,comparison.csv[6].ch_median_ms (identity)
+60.7,ok,summary.csv[5].ci_lo_ms (identity)
+63.4,ok,summary.csv[5].ci_hi_ms (identity)
+69.6,ok,comparison.csv[6].duck_median_ms (identity)
+69.4,ok,summary.csv[21].ci_lo_ms (identity)
+69.9,ok,summary.csv[21].ci_hi_ms (identity)
+0.89,ok,comparison.csv[6].ratio_ch_over_duck (identity)
+0.87,ok,comparison.csv[6].ratio_lo (identity)
+0.91,ok,comparison.csv[6].ratio_hi (identity)
+0.001,constant,display bound '< 0.001' for p-values in Table 3
+-0.80,ok,comparison.csv[6].cliffs_delta (identity)
+1,constant,SF1; slope 1; join_use_nulls = 1; 'n > 0' style bounds
+83.0,ok,comparison.csv[7].ch_median_ms (identity)
+80.7,ok,summary.csv[6].ci_lo_ms (identity)
+83.7,ok,summary.csv[6].ci_hi_ms (identity)
+65.6,ok,comparison.csv[7].duck_median_ms (identity)
+64.9,ok,summary.csv[22].ci_lo_ms (identity)
+68.4,ok,summary.csv[22].ci_hi_ms (identity)
+1.26,ok,comparison.csv[7].ratio_ch_over_duck (identity)
+1.20,ok,comparison.csv[7].ratio_lo (identity)
+1.28,ok,comparison.csv[7].ratio_hi (identity)
+0.001,constant,display bound '< 0.001' for p-values in Table 3
+1.00,ok,breakeven.csv[0].sf (identity)
+10,constant,SF10; 10 % CV threshold (plan 5.1); n = 10
+1022,ok,comparison.csv[8].ch_median_ms (identity)
+"1005,",ok,summary.csv[8].ci_lo_ms (identity)
+1051,ok,summary.csv[8].ci_hi_ms (identity)
+290,ok,comparison.csv[8].duck_median_ms (identity)
+"283,",ok,summary.csv[24].ci_lo_ms (identity)
+303,ok,summary.csv[24].ci_hi_ms (identity)
+3.52,ok,comparison.csv[8].ratio_ch_over_duck (identity)
+3.35,ok,comparison.csv[8].ratio_lo (identity)
+3.65,ok,comparison.csv[8].ratio_hi (identity)
+0.001,constant,display bound '< 0.001' for p-values in Table 3
+1.00,ok,breakeven.csv[0].sf (identity)
+10,constant,SF10; 10 % CV threshold (plan 5.1); n = 10
+292,ok,comparison.csv[9].ch_median_ms (identity)
+"285,",ok,summary.csv[11].ci_lo_ms (identity)
+313,ok,summary.csv[11].ci_hi_ms (identity)
+138,ok,comparison.csv[9].duck_median_ms (identity)
+"134,",ok,summary.csv[27].ci_lo_ms (identity)
+139,ok,summary.csv[27].ci_hi_ms (identity)
+2.12,ok,comparison.csv[9].ratio_ch_over_duck (identity)
+2.06,ok,comparison.csv[9].ratio_lo (identity)
+2.29,ok,comparison.csv[1].ratio_lo (identity)
+0.001,constant,display bound '< 0.001' for p-values in Table 3
+1.00,ok,breakeven.csv[0].sf (identity)
+10,constant,SF10; 10 % CV threshold (plan 5.1); n = 10
+523,ok,comparison.csv[10].ch_median_ms (identity)
+"516,",ok,summary.csv[10].ci_lo_ms (identity)
+544,ok,summary.csv[10].ci_hi_ms (identity)
+221,ok,comparison.csv[10].duck_median_ms (identity)
+"219,",ok,summary.csv[26].ci_lo_ms (identity)
+236,ok,summary.csv[26].ci_hi_ms (identity)
+2.37,ok,comparison.csv[10].ratio_ch_over_duck (identity)
+2.21,ok,comparison.csv[10].ratio_lo (identity)
+2.46,ok,comparison.csv[10].ratio_hi (identity)
+0.001,constant,display bound '< 0.001' for p-values in Table 3
+1.00,ok,breakeven.csv[0].sf (identity)
+10,constant,SF10; 10 % CV threshold (plan 5.1); n = 10
+973,ok,comparison.csv[11].ch_median_ms (identity)
+"957,",ok,summary.csv[12].ci_lo_ms (identity)
+1020,ok,summary.csv[12].ci_hi_ms (identity)
+736,ok,comparison.csv[11].duck_median_ms (identity)
+"706,",ok,summary.csv[14].ci_lo_ms (identity)
+778,ok,summary.csv[28].ci_hi_ms (identity)
+1.32,ok,comparison.csv[11].ratio_ch_over_duck (identity)
+1.25,ok,comparison.csv[11].ratio_lo (identity)
+1.42,ok,comparison.csv[11].ratio_hi (identity)
+0.001,constant,display bound '< 0.001' for p-values in Table 3
+0.88,ok,comparison.csv[14].ratio_lo (identity)
+10,constant,SF10; 10 % CV threshold (plan 5.1); n = 10
+1795,ok,comparison.csv[12].ch_median_ms (identity)
+"1690,",ok,summary.csv[15].ci_lo_ms (identity)
+1853,ok,summary.csv[15].ci_hi_ms (identity)
+448,ok,comparison.csv[12].duck_median_ms (identity)
+"441,",ok,summary.csv[31].ci_lo_ms (identity)
+459,ok,summary.csv[31].ci_hi_ms (identity)
+4.01,ok,comparison.csv[12].ratio_ch_over_duck (identity)
+3.72,ok,comparison.csv[12].ratio_lo (identity)
+4.13,ok,comparison.csv[12].ratio_hi (identity)
+0.001,constant,display bound '< 0.001' for p-values in Table 3
+1.00,ok,breakeven.csv[0].sf (identity)
+10,constant,SF10; 10 % CV threshold (plan 5.1); n = 10
+539,ok,comparison.csv[13].ch_median_ms (identity)
+"533,",ok,summary.csv[9].ci_lo_ms (identity)
+565,ok,summary.csv[9].ci_hi_ms (identity)
+225,ok,comparison.csv[13].duck_median_ms (identity)
+"206,",ok,summary.csv[25].ci_lo_ms (identity)
+244,ok,summary.csv[25].ci_hi_ms (identity)
+2.40,ok,comparison.csv[13].ratio_ch_over_duck (identity)
+2.20,ok,comparison.csv[13].ratio_lo (identity)
+2.68,ok,comparison.csv[5].ratio_lo (identity)
+0.001,constant,display bound '< 0.001' for p-values in Table 3
+1.00,ok,breakeven.csv[0].sf (identity)
+10,constant,SF10; 10 % CV threshold (plan 5.1); n = 10
+610,ok,comparison.csv[14].ch_median_ms (identity)
+"587,",ok,summary.csv[13].ci_lo_ms (identity)
+627,ok,summary.csv[13].ci_hi_ms (identity)
+667,ok,comparison.csv[14].duck_median_ms (identity)
+"655,",ok,summary.csv[29].ci_lo_ms (identity)
+677,ok,summary.csv[29].ci_hi_ms (identity)
+0.92,ok,comparison.csv[14].ratio_ch_over_duck (identity)
+0.88,ok,comparison.csv[14].ratio_lo (identity)
+0.95,ok,comparison.csv[14].ratio_hi (identity)
+0.001,constant,display bound '< 0.001' for p-values in Table 3
+-0.78,ok,comparison.csv[14].cliffs_delta (identity)
+10,constant,SF10; 10 % CV threshold (plan 5.1); n = 10
+730,ok,comparison.csv[15].ch_median_ms (identity)
+"706,",ok,summary.csv[14].ci_lo_ms (identity)
+751,ok,summary.csv[14].ci_hi_ms (identity)
+741,ok,comparison.csv[15].duck_median_ms (identity)
+"722,",ok,summary.csv[30].ci_lo_ms (identity)
+768,ok,summary.csv[30].ci_hi_ms (identity)
+0.98,ok,comparison.csv[15].ratio_ch_over_duck (identity)
+0.93,ok,comparison.csv[15].ratio_lo (identity)
+1.02,ok,comparison.csv[15].ratio_hi (identity)
+0.29,ok,comparison.csv[15].p (identity)
+-0.20,ok,comparison.csv[15].cliffs_delta (identity)
+32,ok,headline.csv[20].value (identity)
+26,ok,headline.csv[26].value (identity)
+1.3,ok,comparison.csv[3].ratio_ch_over_duck (identity)
+5.2,ok,breakeven.csv[1].L_ch_s (identity)
+2.3,ok,comparison.csv[1].ratio_ch_over_duck (identity)
+10,constant,SF10; 10 % CV threshold (plan 5.1); n = 10
+19,ok,headline.csv[21].value (identity)
+32,ok,headline.csv[20].value (identity)
+23,ok,summary.csv[18].warm_min_ms (identity)
+1,constant,SF1; slope 1; join_use_nulls = 1; 'n > 0' style bounds
+0.93,ok,comparison.csv[15].ratio_lo (identity)
+1.08,ok,headline.csv[32].value (identity)
+0.98,ok,comparison.csv[15].ratio_ch_over_duck (identity)
+1,constant,SF1; slope 1; join_use_nulls = 1; 'n > 0' style bounds
+9,ok,comparison.csv[3].query_id (identity)
+1,constant,SF1; slope 1; join_use_nulls = 1; 'n > 0' style bounds
+2,constant,sampling interval 2 ms (config.yaml memory_sampler.interval_ms); 'two' style counts
+1,constant,SF1; slope 1; join_use_nulls = 1; 'n > 0' style bounds
+1.08,ok,headline.csv[32].value (identity)
+1,constant,SF1; slope 1; join_use_nulls = 1; 'n > 0' style bounds
+4.6,ok,comparison.csv[3].peak_ratio_ch_over_duck (identity)
+7.0,ok,comparison.csv[1].peak_ratio_ch_over_duck (identity)
+1.6,ok,comparison.csv[11].peak_ratio_ch_over_duck (identity)
+2.8,ok,comparison.csv[5].ratio_ch_over_duck (identity)
+1.28,ok,comparison.csv[7].ratio_hi (identity)
+0.08,ok,headline.csv[50].value (identity)
+4.89,ok,expectations.csv[12].value (identity)
+7,constant,7 GiB engine memory limit (config.yaml)
+1.69,ok,headline.csv[58].value (identity)
+1.44,ok,headline.csv[60].value (identity)
+21,constant,21 runs per block = 1 cold + 20 warm
+3.0,ok,comparison.csv[5].query_id (identity)
+3.3,ok,comparison.csv[0].ratio_lo (identity)
+1.57,ok,headline.csv[53].value (identity)
+1.69,ok,headline.csv[58].value (identity)
+8,constant,8 GiB container limit; 8 queries; 8 cold runs in the research plan
+3.07,ok,repetitions.csv[269].rel_halfwidth (percent)
+3,constant,3 loads per engine and SF (config.yaml repetitions.load); n = 3; 3 GiB spill threshold
+1,constant,SF1; slope 1; join_use_nulls = 1; 'n > 0' style bounds
+5.2,ok,breakeven.csv[1].L_ch_s (identity)
+5.0,ok,comparison.csv[2].query_id (identity)
+6.5,ok,breakeven.csv[2].q_ch_s (identity)
+4.6,ok,comparison.csv[3].peak_ratio_ch_over_duck (identity)
+9.8,ok,breakeven.csv[0].L_ch_s (identity)
+0.47,ok,comparison.csv[9].speedup_duck_over_ch (identity)
+1.44,ok,headline.csv[60].value (identity)
+3.83,ok,load_summary.csv[0].load_peak_max_bytes (GiB)
+2.50,ok,summary.csv[7].client_overhead_median_ms (percent)
+1.28,ok,comparison.csv[7].ratio_hi (identity)
+1,constant,SF1; slope 1; join_use_nulls = 1; 'n > 0' style bounds
+3.1,ok,breakeven.csv[1].L_duck_s (identity)
+2.8,ok,comparison.csv[5].ratio_ch_over_duck (identity)
+3.3,ok,comparison.csv[0].ratio_lo (identity)
+0.20,ok,load_summary.csv[2].finalize_median_s (identity)
+3.2,ok,breakeven.csv[0].L_duck_s (identity)
+0.30,ok,comparison.csv[0].speedup_duck_over_ch (identity)
+0.92,ok,comparison.csv[14].ratio_ch_over_duck (identity)
+1.29,ok,expectations.csv[1].value (identity)
+0.68,ok,load_summary.csv[2].load_anon_peak_max_bytes (GiB)
+0.08,ok,headline.csv[50].value (identity)
+10,constant,SF10; 10 % CV threshold (plan 5.1); n = 10
+47.5,ok,breakeven.csv[3].L_ch_s (identity)
+44.4,ok,load_summary.csv[1].load_min_s (identity)
+47.7,ok,load_summary.csv[1].load_max_s (identity)
+40.5,ok,load_summary.csv[1].finalize_median_s (identity)
+87.1,ok,breakeven.csv[2].L_ch_s (identity)
+4.73,ok,repetitions.csv[94].rel_halfwidth (percent)
+1.38,ok,load_summary.csv[1].disk_over_parquet (identity)
+8.00,ok,setup.csv[1].value (text) (identity)
+2.96,ok,load_summary.csv[1].load_anon_peak_max_bytes (GiB)
+1.33,ok,headline.csv[57].value (identity)
+10,constant,SF10; 10 % CV threshold (plan 5.1); n = 10
+26.7,ok,breakeven.csv[2].L_duck_s (identity)
+25.8,ok,load_summary.csv[3].load_min_s (identity)
+27.5,ok,load_summary.csv[3].load_max_s (identity)
+0.003,ok,load_summary.csv[3].finalize_median_s (identity)
+26.7,ok,breakeven.csv[2].L_duck_s (identity)
+2.80,ok,repetitions.csv[270].rel_halfwidth (percent)
+0.82,ok,load_summary.csv[3].disk_over_parquet (identity)
+8.00,ok,setup.csv[1].value (text) (identity)
+3.07,ok,repetitions.csv[269].rel_halfwidth (percent)
+0.09,ok,headline.csv[59].value (identity)
+0,constant,ClickHouse fills unmatched rows with 0 (explanation of the Q13 edit); 0 in join_use_nulls context
+-21.6,ok,breakeven.csv[0].n_star (identity)
+-20.0,ok,breakeven.csv[2].n_star (identity)
+8,constant,8 GiB container limit; 8 queries; 8 cold runs in the research plan
+5,constant,5 % target half-width (plan 5.3 item 5); n = 5; 5 loads recommended (research plan)
+28,ok,comparison.csv[8].speedup_duck_over_ch (percent)
+10,constant,SF10; 10 % CV threshold (plan 5.1); n = 10
+62,ok,comparison.csv[6].ch_median_ms (identity)
+15,constant,n = 15 (plan 5.3 item 5)
+84,ok,summary.csv[6].ci_hi_ms (identity)
+20,constant,20 warm runs (config.yaml repetitions.warm); n = 20
+20,constant,20 warm runs (config.yaml repetitions.warm); n = 20
+3.2,ok,breakeven.csv[0].L_duck_s (identity)
+9.7,ok,load_summary.csv[0].total_min_s (identity)
+5,constant,5 % target half-width (plan 5.3 item 5); n = 5; 5 loads recommended (research plan)
+20,constant,20 warm runs (config.yaml repetitions.warm); n = 20
+3,constant,3 loads per engine and SF (config.yaml repetitions.load); n = 3; 3 GiB spill threshold
+7.1,ok,headline.csv[84].value (percent)
+69,ok,summary.csv[20].ci_lo_ms (identity)
+17,ok,pca_variance.csv[1].explained (percent)
+95,constant,95 % confidence level
+20,constant,20 warm runs (config.yaml repetitions.warm); n = 20
+"20,",constant,20 warm runs (config.yaml repetitions.warm); n = 20
+20,constant,20 warm runs (config.yaml repetitions.warm); n = 20
+5,constant,5 % target half-width (plan 5.3 item 5); n = 5; 5 loads recommended (research plan)
+84,ok,summary.csv[6].ci_hi_ms (identity)
+10,constant,SF10; 10 % CV threshold (plan 5.1); n = 10
+28,ok,comparison.csv[8].speedup_duck_over_ch (percent)
+1,constant,SF1; slope 1; join_use_nulls = 1; 'n > 0' style bounds
+8,constant,8 GiB container limit; 8 queries; 8 cold runs in the research plan
+6,constant,"n = 6, smallest n with an exact 95 % CI (order_stat_k(6) = 1, tested)"
+95,constant,95 % confidence level
+6,constant,"n = 6, smallest n with an exact 95 % CI (order_stat_k(6) = 1, tested)"
+3,constant,3 loads per engine and SF (config.yaml repetitions.load); n = 3; 3 GiB spill threshold
+5,constant,5 % target half-width (plan 5.3 item 5); n = 5; 5 loads recommended (research plan)
+"1,",constant,SF1; slope 1; join_use_nulls = 1; 'n > 0' style bounds
+10,constant,SF10; 10 % CV threshold (plan 5.1); n = 10
+"1,",constant,SF1; slope 1; join_use_nulls = 1; 'n > 0' style bounds
+"3,",constant,3 loads per engine and SF (config.yaml repetitions.load); n = 3; 3 GiB spill threshold
+10,constant,SF10; 10 % CV threshold (plan 5.1); n = 10
+4.89,ok,expectations.csv[12].value (identity)
+13,ok,comparison.csv[6].query_id (identity)
+16,ok,headline.csv[0].value (identity)

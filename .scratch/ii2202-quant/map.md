@@ -28,10 +28,10 @@ plus a repository that re-runs the whole pipeline with `make all`.
 - [06 Full pilot campaign](issues/06-campaign.md) — 672 runs + 12 loads, 0 errors, all results correct; peaks <= 4.89 GiB for queries, so no spill thresholds were tested.
 - [07 Statistics module and tests](issues/07-stats.md) — 13 tests pass; bootstrap CIs under-cover at n < 6, so the repetition analysis uses exact order-statistic CIs.
 - [08 EDA and figures](issues/08-eda-figures.md) — 14 stats tables and F1-F6, checked at 300 dpi, greyscale and deuteranopia; one silently dropped PCA arrow fixed.
+- [09 LaTeX report](issues/09-report.md) — 7-page PDF; every number generated from results/stats and checked by script (gate 4 passed).
 
 ## Not yet specified
 
-- Wording of the report's results and discussion (ticket 09).
 
 ## Out of scope
 

@@ -265,6 +265,74 @@ def setup_facts() -> pd.DataFrame:
     return pd.DataFrame({"key": list(f), "value": list(f.values())})
 
 
+def headline(summ, comp, scal, ls, be, reps_agg, reps_eng, r) -> pd.DataFrame:
+    """Derived counts and extremes quoted in the text (so that no number is computed by hand)."""
+    dfast = comp[comp.faster == "duckdb"]
+    cfast = comp[comp.faster == "clickhouse"]
+    order = reps_agg[reps_agg.method == "order"].set_index("n")
+    oe = reps_eng[reps_eng.method == "order"]
+    h = {
+        "n_comparisons": len(comp), "n_duck_faster": len(dfast), "n_ch_faster": len(cfast),
+        "n_significant": int(comp.significant.sum()), "n_not_significant": int((~comp.significant).sum()),
+        "n_duck_faster_significant": int(dfast.significant.sum()), "n_ch_faster_significant": int(cfast.significant.sum()),
+        "n_large_effect": int((comp.magnitude == "large").sum()),
+        "duck_faster_ratio_min": dfast.ratio_ch_over_duck.min(), "duck_faster_ratio_max": dfast.ratio_ch_over_duck.max(),
+        "scan_ratio_min": comp[comp.query_class == "scan"].ratio_ch_over_duck.min(),
+        "scan_ratio_max": comp[comp.query_class == "scan"].ratio_ch_over_duck.max(),
+        "max_p_holm_significant": comp[comp.significant].p_holm.max(),
+        "cold_ratio_min": comp.cold_ratio_ch_over_duck.min(), "cold_ratio_max": comp.cold_ratio_ch_over_duck.max(),
+        "n_cold_ch_faster_sf1": int((comp[comp.sf == min(SFS)].cold_ratio_ch_over_duck < 1).sum()),
+        "n_cold_ch_faster_sf10": int((comp[comp.sf == max(SFS)].cold_ratio_ch_over_duck < 1).sum()),
+        "cold_ch_faster_ratio_min": comp[comp.cold_ratio_ch_over_duck < 1].cold_ratio_ch_over_duck.min(),
+        "cold_ch_faster_ratio_max": comp[comp.cold_ratio_ch_over_duck < 1].cold_ratio_ch_over_duck.max(),
+        "ratio_min_q1_q21": comp[comp.query_id.isin([1, 21])].ratio_ch_over_duck.min(),
+        "n_combos": len(summ), "n_cv_below_10": int((summ.cv_warm < 0.10).sum()),
+        "n_cv_below_10_clickhouse": int(((summ.cv_warm < 0.10) & (summ.engine == "clickhouse")).sum()),
+        "n_cv_below_10_duckdb": int(((summ.cv_warm < 0.10) & (summ.engine == "duckdb")).sum()),
+        "cv_min": summ.cv_warm.min(), "cv_max": summ.cv_warm.max(),
+        "n_shapiro_reject": int((summ.shapiro_p < 0.05).sum()), "n_skew_positive": int((summ.skew_warm > 0).sum()),
+        "cold_over_warm_min": summ.cold_over_warm.min(), "cold_over_warm_max": summ.cold_over_warm.max(),
+        "cold_over_warm_median": summ.cold_over_warm.median(),
+        "slope_min": scal.slope_b.min(), "slope_max": scal.slope_b.max(), "slope_median": scal.slope_b.median(),
+        "n_slope_ci_contains_1": int(((scal.b_lo <= 1) & (scal.b_hi >= 1)).sum()), "n_slopes": len(scal),
+        "n_slope_ci_below_1": int((scal.b_hi < 1).sum()), "n_slope_ci_above_1": int((scal.b_lo > 1).sum()),
+        "peak_max_gib": summ.peak_max_bytes.max() / GIB,
+        "peak_max_clickhouse_gib": summ[summ.engine == "clickhouse"].peak_max_bytes.max() / GIB,
+        "peak_max_duckdb_gib": summ[summ.engine == "duckdb"].peak_max_bytes.max() / GIB,
+        "anon_max_gib": r.peak_anon_bytes.max() / GIB,
+        "n_runs_spilled": int((r.spill_bytes.fillna(0) > 0).sum()), "n_runs_error": int((r.error != "").sum()),
+        "n_runs": len(r), "n_runs_ok": int(r.ok.sum()),
+    }
+    for sf in SFS:
+        c = comp[comp.sf == sf]
+        h[f"peak_ratio_min_sf{sf}"] = c.peak_ratio_ch_over_duck.min()
+        h[f"peak_ratio_max_sf{sf}"] = c.peak_ratio_ch_over_duck.max()
+        for e in ENGINES:
+            s_ = summ[(summ.engine == e) & (summ.sf == sf)]
+            h[f"idle_gib_{e}_sf{sf}"] = s_.baseline_cold_bytes.median() / GIB
+            h[f"engine_peak_max_gib_{e}_sf{sf}"] = s_.engine_peak_median_bytes.max() / GIB
+        lr = ls[ls.sf == sf].set_index("engine")
+        h[f"load_ratio_sf{sf}"] = lr.loc["clickhouse", "total_median_s"] / lr.loc["duckdb", "total_median_s"]
+        h[f"disk_ratio_sf{sf}"] = lr.loc["clickhouse", "disk_median_bytes"] / lr.loc["duckdb", "disk_median_bytes"]
+        b = be[(be.sf == sf) & (be.load_basis == "total_s")].iloc[0]
+        h[f"q_ratio_sf{sf}"] = b.q_ch_s / b.q_duck_s
+    ch_ov = (r[(r.engine == "clickhouse") & r.ok].latency_ms - r[(r.engine == "clickhouse") & r.ok].server_latency_ms)
+    h["ch_client_overhead_median_ms"] = ch_ov.median()
+    h["ch_client_overhead_abs_max_ms"] = ch_ov.abs().max()
+    for n in order.index:
+        h[f"order_share_below_5pct_n{n}"] = order.loc[n, "share_below_5pct"]
+        h[f"order_median_halfwidth_n{n}"] = order.loc[n, "median"]
+        h[f"order_max_halfwidth_n{n}"] = order.loc[n, "max"]
+    boot = reps_agg[reps_agg.method == "bootstrap"].set_index("n")
+    h["boot_median_halfwidth_n3"] = boot.loc[3, "median"]
+    for e in ENGINES:
+        x = oe[(oe.engine == e)].groupby("n").share_below_5pct.mean()
+        h[f"order_share_below_5pct_n20_{e}"] = x.loc[20]
+    h["n_min_n_20_or_more"] = int(((summ.min_n_5pct >= 20) | summ.min_n_5pct.isna()).sum())
+    h["n_min_n_not_reached"] = int(summ.min_n_5pct.isna().sum())
+    return pd.DataFrame({"key": list(h), "value": list(h.values())})
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     r = load_runs()
@@ -281,7 +349,8 @@ def main():
     files = {"summary": summ, "comparison": comp, "scaling": scal, "load_summary": ls, "breakeven": be,
              "repetitions": reps, "repetitions_summary": reps_agg, "repetitions_by_engine": reps_eng,
              "pca_scores": sc, "pca_loadings": ld, "pca_variance": var, "memory_check": memory_check(r),
-             "expectations": expectations(summ, comp, scal, ls, be), "setup": setup_facts()}
+             "expectations": expectations(summ, comp, scal, ls, be), "setup": setup_facts(),
+             "headline": headline(summ, comp, scal, ls, be, reps_agg, reps_eng, r)}
     for name, df in files.items():
         df.to_csv(OUT / f"{name}.csv", index=False)
     print("wrote", ", ".join(f"{k}.csv" for k in files))

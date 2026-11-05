@@ -18,6 +18,7 @@ import yaml  # noqa: E402
 from matplotlib.lines import Line2D  # noqa: E402
 from matplotlib.patches import Patch  # noqa: E402
 from matplotlib.ticker import FuncFormatter, LogLocator, NullFormatter  # noqa: E402
+from matplotlib.transforms import ScaledTranslation  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 ST = ROOT / "results" / "stats"
@@ -74,20 +75,21 @@ def qlabel(q):
     return f"Q{q}"
 
 
-def class_spans(ax, y):
-    """Class names under the query labels."""
+def class_spans(ax, y=None):
+    """Class names under the query labels, at a fixed distance in points below the axis."""
     start = 0
+    trans = ax.get_xaxis_transform() + ScaledTranslation(0, -15 / 72, ax.figure.dpi_scale_trans)
     for cls in ["scan", "join", "aggregation"]:
         n = sum(1 for q in QORDER if QCLASS[q] == cls)
-        ax.text(start + (n - 1) / 2, y, CLASS_LABEL[cls], ha="center", va="top",
-                transform=ax.get_xaxis_transform(), fontsize=7.5, style="italic")
+        ax.text(start + (n - 1) / 2, 0, CLASS_LABEL[cls], ha="center", va="top",
+                transform=trans, fontsize=7.5, style="italic")
         if start:
             ax.axvline(start - 0.5, color="0.75", lw=0.6, zorder=0)
         start += n
 
 
 def f1_latency(r):
-    fig, axes = plt.subplots(1, 2, figsize=(W, 3.0), sharey=False)
+    fig, axes = plt.subplots(1, 2, figsize=(W, 2.5), sharey=False)
     rng = np.random.default_rng(0)
     for ax, sf in zip(axes, SFS):
         for k, e in enumerate(["clickhouse", "duckdb"]):
@@ -125,7 +127,7 @@ def f1_latency(r):
 
 def f2_scaling():
     s = pd.read_csv(ST / "summary.csv")
-    fig, axes = plt.subplots(1, 2, figsize=(W, 2.9), sharey=True)
+    fig, axes = plt.subplots(1, 2, figsize=(5.1, 2.25), sharey=True)
     for ax, e in zip(axes, ["clickhouse", "duckdb"]):
         for q in QORDER:
             c, m, ls = QSTYLE[q]
@@ -152,7 +154,7 @@ def f2_scaling():
 
 def f3_memory():
     s = pd.read_csv(ST / "summary.csv")
-    fig, axes = plt.subplots(1, 2, figsize=(W, 2.9), sharey=True)
+    fig, axes = plt.subplots(1, 2, figsize=(W, 2.45), sharey=True)
     for ax, sf in zip(axes, SFS):
         for k, e in enumerate(["clickhouse", "duckdb"]):
             st = ENG[e]
@@ -185,7 +187,7 @@ def f3_memory():
 def f4_breakeven():
     be = pd.read_csv(ST / "breakeven.csv")
     be = be[be.load_basis == "total_s"]
-    fig, axes = plt.subplots(1, 2, figsize=(W, 3.1))
+    fig, axes = plt.subplots(1, 2, figsize=(5.05, 2.4))
     for ax, sf in zip(axes, SFS):
         row = be[be.sf == sf].iloc[0]
         nmax = max(10.0, 2.2 * row.n_star) if row.kind == "crossing" else 50.0
@@ -200,13 +202,13 @@ def f4_breakeven():
             ax.annotate(f"n* = {row.n_star:.1f}", (row.n_star, y), xytext=(8, -18), textcoords="offset points", fontsize=7.5)
         else:
             who = "ClickHouse" if row.kind.startswith("clickhouse") else "DuckDB"
-            ax.text(0.03, 0.95, f"no crossing for n > 0:\n{who} cheaper for every n",
-                    transform=ax.transAxes, va="top", fontsize=7.5)
+            ax.text(0.03, 0.97, f"no crossing for n > 0:\n{who} cheaper\nfor every n",
+                    transform=ax.transAxes, va="top", ha="left", fontsize=7)
         ax.set_xlabel("Executions n of the 8-query set")
         ax.set_title(f"SF{sf}")
         ax.set_xlim(0, nmax); ax.set_ylim(bottom=0)
         ax.grid(color="0.9", lw=0.5)
-        ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.22), frameon=False, fontsize=6.8)
+        ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.27), frameon=False, fontsize=6.8)
     axes[0].set_ylabel("Total time T(n) (s)")
     fig.tight_layout()
     save(fig, "F4_breakeven")
@@ -216,27 +218,27 @@ def f5_repetitions():
     allm = pd.read_csv(ST / "repetitions.csv")
     d = allm[allm.method == "order"].dropna(subset=["rel_halfwidth"])
     boot = allm[allm.method == "bootstrap"]
-    fig, ax = plt.subplots(figsize=(W * 0.62, 3.2))
+    fig, ax = plt.subplots(figsize=(2.85, 3.05))
     for (e, sf, q), b in d.groupby(["engine", "sf", "query_id"]):
         ax.plot(b.n, 100 * b.rel_halfwidth, color=ENG[e]["color"], lw=0.5, alpha=0.35, ls="-" if e == "clickhouse" else "--")
     for k, e in enumerate(["clickhouse", "duckdb"]):
         g = d[d.engine == e].groupby("n").rel_halfwidth.median() * 100
         ax.plot(g.index, g.values, color=ENG[e]["color"], marker=ENG[e]["marker"], lw=2, ls="-" if e == "clickhouse" else "--",
-                mfc="white" if e == "clickhouse" else ENG[e]["color"], label=ENG[e]["label"] + ": exact CI, median of 16")
+                mfc="white" if e == "clickhouse" else ENG[e]["color"], label=ENG[e]["label"] + ": exact CI,\nmedian of 16")
     gb = boot.groupby("n").rel_halfwidth.median() * 100
     ax.plot(gb.index, gb.values, color="0.35", lw=1, ls=(0, (1, 1)), marker="x", ms=4,
-            label="bootstrap CI, median of 32 (under-covers for n < 6)")
+            label="bootstrap CI, median of 32\n(under-covers for n < 6)")
     ax.axvspan(2.5, 5.5, color="0.92", zorder=0)
-    ax.text(4, 0.97, "no exact 95 % CI\nfor n < 6", transform=ax.get_xaxis_transform(), ha="center", va="top", fontsize=6.8)
+    ax.text(4, 0.97, "n < 6:\nno exact\nCI", transform=ax.get_xaxis_transform(), ha="center", va="top", fontsize=6.3)
     ax.axhline(5, color="black", ls=":", lw=1)
-    ax.text(20.3, 5, "5 %", va="center", fontsize=7.5)
+    ax.text(4, 4.6, "5 %", ha="center", va="top", fontsize=7)
     ax.set_yscale("log")
     plain_log_y(ax)
     ax.set_xticks([3, 5, 6, 10, 15, 20])
     ax.set_xlabel("Warm runs n (first n of 20)")
     ax.set_ylabel("Relative half-width of the\n95 % CI of the median (%)")
     ax.grid(color="0.9", lw=0.5)
-    ax.legend(frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.24), fontsize=6.8, ncol=1)
+    ax.legend(frameon=False, loc="upper center", bbox_to_anchor=(0.45, -0.2), fontsize=6.5, ncol=1)
     fig.tight_layout()
     save(fig, "F5_repetitions")
 
@@ -245,7 +247,7 @@ def f6_pca():
     sc = pd.read_csv(ST / "pca_scores.csv")
     ld = pd.read_csv(ST / "pca_loadings.csv")
     var = pd.read_csv(ST / "pca_variance.csv")
-    fig, ax = plt.subplots(figsize=(W * 0.85, 3.0))
+    fig, ax = plt.subplots(figsize=(3.3, 3.05))
     cls_style = {"scan": (OI["orange"], "s"), "join": (OI["blue"], "^"), "aggregation": (OI["green"], "o")}
     for cls, (c, m) in cls_style.items():
         d = sc[sc.query_class == cls]
@@ -264,7 +266,7 @@ def f6_pca():
     for key, pts in groups.items():
         x, y = max(pts, key=lambda p: abs(p[1])) if key != "latency DuckDB" else np.mean(pts, axis=0)
         off, ha = {"peak memory": ((6, -2), "left"), "latency DuckDB": ((-4, -10), "right"),
-                   "latency ClickHouse": ((-6, -4), "right")}[key]
+                   "latency ClickHouse": ((0, -11), "center")}[key]
         ax.annotate(key, (x, y), xytext=off, textcoords="offset points",
                     ha=ha, fontsize=6.5, color="0.25", style="italic")
     # Axis limits must include every arrow tip, or matplotlib silently drops that arrow.
@@ -277,7 +279,7 @@ def f6_pca():
     h, l = ax.get_legend_handles_labels()
     h += [Line2D([], [], color="0.45", lw=0.8, label="loading: log latency"),
           Line2D([], [], color="0.15", lw=0.8, ls="--", label="loading: log peak memory")]
-    ax.legend(handles=h, frameon=False, fontsize=6.8, loc="center left", bbox_to_anchor=(1.0, 0.5))
+    ax.legend(handles=h, frameon=False, fontsize=6.5, loc="upper center", bbox_to_anchor=(0.5, -0.17), ncol=2)
     fig.tight_layout()
     save(fig, "F6_pca")
 

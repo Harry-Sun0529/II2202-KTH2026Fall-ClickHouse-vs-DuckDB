@@ -14,3 +14,5 @@ report/*.synctex.gz
 report/build/
 results/tmp/
 .DS_Store
+report/main.pdf
+report/*.xdv
