@@ -29,8 +29,11 @@ plus a repository that re-runs the whole pipeline with `make all`.
 - [07 Statistics module and tests](issues/07-stats.md) — 13 tests pass; bootstrap CIs under-cover at n < 6, so the repetition analysis uses exact order-statistic CIs.
 - [08 EDA and figures](issues/08-eda-figures.md) — 14 stats tables and F1-F6, checked at 300 dpi, greyscale and deuteranopia; one silently dropped PCA arrow fixed.
 - [09 LaTeX report](issues/09-report.md) — 7-page PDF; every number generated from results/stats and checked by script (gate 4 passed).
+- [10 Independent review and summary](issues/10-review-summary.md) — fresh-subagent review: 1 must-fix (cold ranking claim) fixed and verified, 25 more handled; checklist in report/checklist.md.
 
 ## Not yet specified
+
+_Nothing left: the destination is reached. Remaining steps are the students' own (see Out of scope)._
 
 
 ## Out of scope

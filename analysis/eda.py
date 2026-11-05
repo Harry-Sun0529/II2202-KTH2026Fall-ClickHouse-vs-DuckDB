@@ -286,6 +286,7 @@ def headline(summ, comp, scal, ls, be, reps_agg, reps_eng, r) -> pd.DataFrame:
         "cold_ch_faster_ratio_min": comp[comp.cold_ratio_ch_over_duck < 1].cold_ratio_ch_over_duck.min(),
         "cold_ch_faster_ratio_max": comp[comp.cold_ratio_ch_over_duck < 1].cold_ratio_ch_over_duck.max(),
         "ratio_min_q1_q21": comp[comp.query_id.isin([1, 21])].ratio_ch_over_duck.min(),
+        "cold_ch_faster_queries_sf10": ", ".join(f"Q{q}" for q in comp[(comp.sf == max(SFS)) & (comp.cold_ratio_ch_over_duck < 1)].query_id),
         "n_combos": len(summ), "n_cv_below_10": int((summ.cv_warm < 0.10).sum()),
         "n_cv_below_10_clickhouse": int(((summ.cv_warm < 0.10) & (summ.engine == "clickhouse")).sum()),
         "n_cv_below_10_duckdb": int(((summ.cv_warm < 0.10) & (summ.engine == "duckdb")).sum()),
@@ -316,6 +317,21 @@ def headline(summ, comp, scal, ls, be, reps_agg, reps_eng, r) -> pd.DataFrame:
         h[f"disk_ratio_sf{sf}"] = lr.loc["clickhouse", "disk_median_bytes"] / lr.loc["duckdb", "disk_median_bytes"]
         b = be[(be.sf == sf) & (be.load_basis == "total_s")].iloc[0]
         h[f"q_ratio_sf{sf}"] = b.q_ch_s / b.q_duck_s
+    # Queries where the cold run ranks the engines differently from the warm median.
+    for sf in SFS:
+        c = comp[comp.sf == sf]
+        flips = c[(c.cold_ratio_ch_over_duck < 1) != (c.ratio_ch_over_duck < 1)]
+        h[f"n_cold_flips_sf{sf}"] = len(flips)
+        h[f"cold_flip_queries_sf{sf}"] = ", ".join(f"Q{q}" for q in flips.query_id)
+    # Smallest two-sided p of an exact Mann-Whitney test with 5 vs 5 loads (complete separation).
+    h["mw_min_p_5v5"] = float(sps.mannwhitneyu([1, 2, 3, 4, 5], [6, 7, 8, 9, 10], method="exact").pvalue)
+    loads_ts = pd.to_datetime(pd.read_csv(ROOT / "results/load_runs.csv").timestamp)
+    runs_ts = pd.to_datetime(r.timestamp)
+    h["pilot_load_minutes"] = (runs_ts.min() - loads_ts.min()).total_seconds() / 60
+    h["pilot_query_minutes"] = (runs_ts.max() - runs_ts.min()).total_seconds() / 60
+    # Planning number for Section 6: 2 engines x 3 SFs x 8 queries x (8 cold + 20 warm) runs.
+    h["full_study_query_runs"] = 2 * 3 * len(QORDER) * (8 + 20)
+    h["ch_engine_peak_max_gib"] = summ[summ.engine == "clickhouse"].engine_peak_median_bytes.max() / GIB
     ch_ov = (r[(r.engine == "clickhouse") & r.ok].latency_ms - r[(r.engine == "clickhouse") & r.ok].server_latency_ms)
     h["ch_client_overhead_median_ms"] = ch_ov.median()
     h["ch_client_overhead_abs_max_ms"] = ch_ov.abs().max()

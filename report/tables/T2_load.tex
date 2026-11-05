@@ -1,6 +1,6 @@
 \begin{table}[ht]
 \centering\footnotesize
-\caption{Loads (3 per engine and SF): import time median (min--max), merge (\CH) or checkpoint (\DK) time, total; footprint on disk and relative to the Parquet input; peak container / anonymous memory during the load; container memory right after restart (median over the cold runs).}
+\caption{Loads (3 per engine and SF). Each column is the median of its own three values, so Total need not equal Import + Merge/ckpt: import time (min--max), merge (\CH) or checkpoint (\DK) time, total; disk footprint and its ratio to the Parquet input (computed from unrounded sizes); peak container / anonymous memory during the load (maximum); container memory right after restart (median over the cold runs). GB = $10^9$ bytes, GiB = $2^{30}$ bytes.}
 \label{tab:load}
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{@{}lrrrrrrrr@{}}

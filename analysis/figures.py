@@ -38,7 +38,7 @@ ENG = {  # colour, marker, hatch, label
 QSTYLE = {  # per query: colour, marker, line style (8 Okabe-Ito colours incl. black)
     1: (OI["black"], "o", "-"), 6: (OI["orange"], "s", "--"), 5: (OI["sky"], "^", "-."),
     9: (OI["green"], "v", ":"), 21: (OI["blue"], "D", "-"), 3: (OI["vermillion"], "P", "--"),
-    13: (OI["purple"], "X", "-."), 18: (OI["yellow"], "*", ":"),
+    13: (OI["purple"], "X", "-."), 18: ("#555555", "*", ":"),
 }
 CLASS_LABEL = {"scan": "scan", "join": "join", "aggregation": "aggregation"}
 
@@ -89,7 +89,7 @@ def class_spans(ax, y=None):
 
 
 def f1_latency(r):
-    fig, axes = plt.subplots(1, 2, figsize=(W, 2.5), sharey=False)
+    fig, axes = plt.subplots(1, 2, figsize=(6.2, 2.45), sharey=False)
     rng = np.random.default_rng(0)
     for ax, sf in zip(axes, SFS):
         for k, e in enumerate(["clickhouse", "duckdb"]):
@@ -109,7 +109,8 @@ def f1_latency(r):
             cold = [r[(r.engine == e) & (r.sf == sf) & (r.query_id == q) & (r.phase == "cold") & r.ok].latency_ms for q in QORDER]
             for p, c in zip(pos, cold):
                 if len(c):
-                    ax.scatter([p], c, marker="*", s=42, color="black", zorder=4)
+                    ax.scatter([p], c, marker="*", s=55, zorder=4, linewidths=0.8, edgecolors="black",
+                               facecolors="white" if e == "clickhouse" else "black")
         ax.set_yscale("log")
         plain_log_y(ax)
         ax.set_xticks(range(len(QORDER)), [qlabel(q) for q in QORDER])
@@ -119,24 +120,24 @@ def f1_latency(r):
         ax.grid(axis="y", which="major", color="0.88", lw=0.5)
     handles = [Patch(facecolor=ENG[e]["color"], alpha=0.55, hatch=ENG[e]["hatch"], edgecolor="black",
                      label=ENG[e]["label"] + " (20 warm runs)") for e in ENG]
-    handles.append(Line2D([], [], marker="*", color="black", lw=0, markersize=8, label="cold run, next to its engine's box"))
-    fig.legend(handles=handles, loc="lower center", ncol=3, bbox_to_anchor=(0.5, -0.07), frameon=False)
+    handles.append(Line2D([], [], marker="*", mfc="white", mec="black", lw=0, markersize=9, label="ClickHouse cold run"))
+    handles.append(Line2D([], [], marker="*", mfc="black", mec="black", lw=0, markersize=9, label="DuckDB cold run"))
+    fig.legend(handles=handles, loc="lower center", ncol=2, bbox_to_anchor=(0.5, -0.13), frameon=False)
     fig.tight_layout(rect=(0, 0.04, 1, 1))
     save(fig, "F1_latency")
 
 
 def f2_scaling():
     s = pd.read_csv(ST / "summary.csv")
-    fig, axes = plt.subplots(1, 2, figsize=(5.1, 2.25), sharey=True)
+    fig, axes = plt.subplots(1, 2, figsize=(4.5, 2.3), sharey=True)
     for ax, e in zip(axes, ["clickhouse", "duckdb"]):
         for q in QORDER:
             c, m, ls = QSTYLE[q]
             d = s[(s.engine == e) & (s.query_id == q)].sort_values("sf")
-            ax.plot(d.sf, d.warm_median_ms, color=c, marker=m, ls=ls, lw=1.1, ms=5,
-                    mec="black" if q == 18 else c, mew=0.5, label=qlabel(q))
+            ax.plot(d.sf, d.warm_median_ms, color=c, marker=m, ls=ls, lw=1.3, ms=5.5, mec=c, mew=0.5, label=qlabel(q))
         x = np.array(SFS, float)
         y0 = s[s.engine == e].groupby("sf").warm_median_ms.median().loc[SFS[0]]
-        ax.plot(x, y0 * x / x[0], color="0.4", lw=2.2, alpha=0.35, label="slope 1 (linear)")
+        ax.plot(x, y0 * x / x[0], color="black", lw=0.9, ls=(0, (6, 3)), zorder=5, label="slope 1 (linear)")
         ax.set_xscale("log"); ax.set_yscale("log")
         plain_log_y(ax)
         ax.set_xticks(SFS, [f"SF{v}" for v in SFS])
@@ -154,7 +155,7 @@ def f2_scaling():
 
 def f3_memory():
     s = pd.read_csv(ST / "summary.csv")
-    fig, axes = plt.subplots(1, 2, figsize=(W, 2.45), sharey=True)
+    fig, axes = plt.subplots(1, 2, figsize=(6.2, 2.35), sharey=True)
     for ax, sf in zip(axes, SFS):
         for k, e in enumerate(["clickhouse", "duckdb"]):
             st = ENG[e]
@@ -169,17 +170,17 @@ def f3_memory():
                        label="idle after restart" if k == 0 else None)
         ax.axhline(7, color="black", ls="--", lw=0.9)
         ax.axhline(8, color="black", ls=":", lw=1.1)
-        ax.text(len(QORDER) - 0.45, 7, "engine limit 7 GiB", ha="right", va="bottom", fontsize=7)
-        ax.text(len(QORDER) - 0.45, 8, "container limit 8 GiB", ha="right", va="bottom", fontsize=7)
+        ax.text(len(QORDER) - 0.45, 7.08, "engine limit 7 GiB", ha="right", va="bottom", fontsize=7)
+        ax.text(len(QORDER) - 0.45, 8.08, "container limit 8 GiB", ha="right", va="bottom", fontsize=7)
         ax.set_xticks(range(len(QORDER)), [qlabel(q) for q in QORDER])
-        ax.set_ylim(0, 8.7)
+        ax.set_ylim(0, 8.8)
         ax.set_title(f"SF{sf}")
         class_spans(ax, -0.09)
         ax.grid(axis="y", color="0.9", lw=0.5)
     axes[0].set_ylabel("Container memory peak (GiB)")
     h, l = axes[0].get_legend_handles_labels()
     h.append(Line2D([], [], color="black", lw=0.7, marker="|", markersize=6, label="max over 21 runs"))
-    fig.legend(handles=h, loc="lower center", ncol=4, bbox_to_anchor=(0.5, -0.07), frameon=False)
+    fig.legend(handles=h, loc="lower center", ncol=2, bbox_to_anchor=(0.5, -0.13), frameon=False)
     fig.tight_layout(rect=(0, 0.04, 1, 1))
     save(fig, "F3_memory")
 
@@ -191,11 +192,11 @@ def f4_breakeven():
     for ax, sf in zip(axes, SFS):
         row = be[be.sf == sf].iloc[0]
         nmax = max(10.0, 2.2 * row.n_star) if row.kind == "crossing" else 50.0
-        n = np.linspace(0, nmax, 200)
+        n = np.arange(0, int(nmax) + 1)
         for e, L, q, ls in [("clickhouse", row.L_ch_s, row.q_ch_s, "-"), ("duckdb", row.L_duck_s, row.q_duck_s, "--")]:
             st = ENG[e]
-            ax.plot(n, L + n * q, color=st["color"], ls=ls, lw=1.6, label=f"{st['label']}: T(n) = {L:.1f} + {q:.2f} n s")
-            ax.plot(n[::25], (L + n * q)[::25], color=st["color"], marker=st["marker"], lw=0, ms=4)
+            ax.plot(n, L + n * q, color=st["color"], ls=ls, lw=1.6, marker=st["marker"], ms=4, markevery=10,
+                    label=f"{st['label']}: T(n) = {L:.1f} s + {q:.2f} s $\\cdot$ n")
         if row.kind == "crossing":
             y = row.L_ch_s + row.n_star * row.q_ch_s
             ax.axvline(row.n_star, color="black", lw=0.8, ls=":")
@@ -253,7 +254,9 @@ def f6_pca():
         d = sc[sc.query_class == cls]
         ax.scatter(d.pc1, d.pc2, color=c, marker=m, s=45, edgecolor="black", lw=0.6, label=cls, zorder=3)
         for _, r in d.iterrows():
-            ax.annotate(f"Q{r.query_id}", (r.pc1, r.pc2), xytext=(4, 3), textcoords="offset points", fontsize=7.5)
+            off = {3: (-4, 5), 5: (5, -9), 13: (6, -9)}.get(int(r.query_id), (4, 3))
+            ax.annotate(f"Q{r.query_id}", (r.pc1, r.pc2), xytext=off, textcoords="offset points", fontsize=7.5,
+                        ha="right" if off[0] < 0 else "left")
     scale = 0.8 * np.abs(sc[["pc1", "pc2"]]).to_numpy().max()
     groups = {}
     for _, r in ld.iterrows():
@@ -268,7 +271,7 @@ def f6_pca():
         off, ha = {"peak memory": ((6, -2), "left"), "latency DuckDB": ((-4, -10), "right"),
                    "latency ClickHouse": ((0, -11), "center")}[key]
         ax.annotate(key, (x, y), xytext=off, textcoords="offset points",
-                    ha=ha, fontsize=6.5, color="0.25", style="italic")
+                    ha=ha, fontsize=7, color="0.1", style="italic")
     # Axis limits must include every arrow tip, or matplotlib silently drops that arrow.
     allx = np.r_[sc.pc1, ld.pc1 * scale]; ally = np.r_[sc.pc2, ld.pc2 * scale]
     padx, pady = 0.12 * np.ptp(allx), 0.12 * np.ptp(ally)

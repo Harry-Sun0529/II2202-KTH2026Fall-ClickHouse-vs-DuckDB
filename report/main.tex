@@ -20,6 +20,7 @@
 \usepackage{subcaption}
 \usepackage{titlesec}
 \usepackage{microtype}
+\usepackage{placeins}
 \usepackage[hidelinks]{hyperref}
 \usepackage{xcolor}
 
@@ -80,9 +81,9 @@ The query texts are the TPC-H queries with the default substitution parameters, 
 Without it \CH\ fills unmatched rows of the outer join with 0 instead of NULL, and the result is wrong.
 
 \textbf{Systems and set-up.} Table~\ref{tab:setup} lists the configuration.
-Each engine runs in its own Docker container with \texttt{--memory=8g --memory-swap=8g --cpus=4} on the same four virtual CPUs.
+Each engine runs in its own Docker container with \texttt{--memory=8g --memory-swap=8g --cpus=4}, pinned to the same four virtual CPUs (\texttt{--cpuset-cpus=0-3}); during measurements only one engine container runs at a time.
 \DK\ is embedded, so its container runs a small Python process that holds the connection, as an application would; a driver container on the other four virtual CPUs runs the experiment.
-The host is a laptop (\V{setup.cpu_model}, \V{setup.host_cores} cores, \V{setup.host_mem_gib}\,GiB) running Docker Desktop \V{setup.docker_version}, whose Linux virtual machine has \V{setup.docker_vm_mem_mib}\,MiB of memory and kernel \V{setup.kernel}.
+The host is a laptop (\V{setup.cpu_model}, \V{setup.host_cores} cores, \V{setup.host_mem_gib}\,GiB) running Docker Desktop (Docker Engine \V{setup.docker_version}), whose Linux virtual machine has \V{setup.docker_vm_mem_mib}\,MiB of memory and kernel \V{setup.kernel}.
 
 \begin{table}[ht]
 \centering\small
@@ -103,10 +104,11 @@ Storage, caches & MergeTree on TPC-H primary key; query (condition) cache off & 
 \end{table}
 
 \textbf{Procedure.} For each engine and SF we loaded the data three times.
-Each load starts from a restarted engine and an emptied operating-system page cache, imports all tables and is timed.
+Each load starts from a restarted engine and an emptied page cache of the Linux virtual machine (the cache of the macOS host below it could not be emptied), imports all tables and is timed.
 For \CH\ the background merges are then forced with \texttt{OPTIMIZE~...~FINAL} and timed separately; for \DK\ the \texttt{CHECKPOINT} is timed.
 For each engine, SF and query we then restarted the engine, emptied the page cache and ran the query once (\emph{cold}), followed by 20 runs in a row (\emph{warm}).
 This gives \V{headline.n_runs} query runs and 12 loads.
+Latency is measured at the client for \CH\ (HTTP request until the full result is received) and in-process around execute and fetch for \DK; Table~\ref{tab:latency} reports these values.
 Query order was shuffled with a fixed seed.
 Before any timing, a correctness check compared every result at SF1 with the TPC-H reference answers, and compared the two engines with each other at both SFs.
 All checks passed, and every timed run returned the verified result.
@@ -149,7 +151,7 @@ Disk footprint & dependent, continuous & bytes on disk after loading \\
 
 \section{Data analysis (c)}
 
-\textbf{Preprocessing.} The driver writes one CSV row per run. A script checks that all \V{headline.n_runs} runs and 12 loads are present, every result is correct, every latency is positive and no peak exceeds 8\,GiB. No run failed and no row was removed.
+\textbf{Preprocessing.} The driver writes one CSV row per run, and we analyse the files in Python (pandas, SciPy, statsmodels, matplotlib). A script checks that all \V{headline.n_runs} runs and 12 loads are present, every result is correct, every latency is positive and no peak exceeds 8\,GiB. No run failed and no row was removed.
 
 \textbf{Measurement of memory.} \CH\ is a server while \DK\ shares a process with its host, so there is no common process boundary; we measure both at the container.
 The driver reads the container's \texttt{memory.current} every 2\,ms during each run (actual median interval \V{memory.median_interval_ms}\,ms, maximum \V{memory.max_interval_ms}\,ms) and takes the maximum.
@@ -166,9 +168,9 @@ This container-level number includes the page cache of files the engine has read
 \item Scaling model: for each engine and query we fit $\log t = a + b \log \mathrm{SF}$.
 With only two SF values the line passes exactly through both medians, so it has no residuals and cannot be tested; the CI of $b$ only reflects run-to-run noise.
 \item Break-even (RQ3): the total cost of loading once and running the query set $n$ times is $T(n) = L + n\,q$, where $L$ is the median load time (import plus merge or checkpoint) and $q$ the sum of the eight median warm latencies.
-Two lines cross at $n^* = (L_A - L_B)/(q_B - q_A)$; if $n^* \le 0$, one engine is cheaper for every $n$.
+With $A$ = \CH\ and $B$ = \DK, the lines cross at $n^* = (L_A - L_B)/(q_B - q_A)$; if $n^* \le 0$, one engine is cheaper for every $n$.
 \item How much data is needed: we recomputed the 95\,\% CI of the median from only the first $n$ warm runs ($n$ = 3, 5, 6, 10, 15, 20) and looked for the smallest $n$ with a relative half-width below 5\,\%.
-We use the exact distribution-free CI based on order statistics~\cite{leboudec}, which does not exist for $n < 6$, because the bootstrap CI is far too narrow for tiny samples: at $n = 3$ it is the range of the three values and contains the true median only 75\,\% of the time (confirmed in a simulation test).
+We use the exact distribution-free CI based on order statistics~\cite{leboudec} instead of the bootstrap CI, because the bootstrap CI is far too narrow for tiny samples: at $n = 3$ it is the range of the three values and contains the true median only 75\,\% of the time (confirmed in a simulation test). The exact 95\,\% CI needs $n \ge 6$, so $n$ = 3 and 5 are shown only with the bootstrap.
 \item Searching for a model (PCA): we built a matrix with one row per query and eight columns (log median latency and log median peak memory for each engine and SF), standardised the columns and ran a principal component analysis, to see whether the queries group by our three classes.
 \end{enumerate}
 
@@ -178,11 +180,13 @@ We use the exact distribution-free CI based on order statistics~\cite{leboudec},
 \textbf{Latency (RQ1).} Figure~\ref{fig:latency} shows all warm runs and the cold run.
 Contrary to E5, \DK\ was faster in \V{headline.n_duck_faster} of the \V{headline.n_comparisons} comparisons, by a factor of \V{headline.duck_faster_ratio_min} to \V{headline.duck_faster_ratio_max} (Table~\ref{tab:latency}).
 \CH\ was faster only on \Q13 at both SFs (ratio \V{q13sf1.ratio} and \V{q13sf10.ratio}) and on \Q18 at SF10, where the difference (ratio \V{q18sf10.ratio}, CI \V{q18sf10.ratio_lo}--\V{q18sf10.ratio_hi}) is not significant (Holm-adjusted $p = \V{q18sf10.p_holm}$).
-The other \V{headline.n_significant} differences are significant (adjusted $p \le \V{headline.max_p_holm_significant}$) with a large effect size.
+The other \V{headline.n_significant} differences are significant (adjusted $p < 0.001$) with a large effect size.
+Because the 20 runs are consecutive repeats on one machine, this only shows that the differences are larger than the run-to-run noise of this set-up.
+We did not test why \CH\ was slower; possible reasons are our default settings, the limit of four threads, and \texttt{Decimal} arithmetic on the price columns.
 The gap depends more on the query than on its class: it is largest for \Q1 and \Q21 (ratio at least \V{headline.ratio_min_q1_q21}) and smallest for \Q9, \Q13 and \Q18.
-With one cold run per query the cold differences cannot be tested.
-At SF1 the cold runs ranked the engines as the warm runs did, but at SF10 \CH's cold run was faster for \V{headline.n_cold_ch_faster_sf10} queries (\Q3, \Q6, \Q13; ratio \V{headline.cold_ch_faster_ratio_min}--\V{headline.cold_ch_faster_ratio_max}).
-\CH's HTTP interface adds little: the client latency exceeds the server's own time by a median of \V{headline.ch_client_overhead_median_ms}\,ms.
+With one cold run per query the cold differences cannot be tested, and the macOS host cache may have kept some data warm.
+The cold run ranked the engines differently from the warm runs for \V{headline.cold_flip_queries_sf1} at SF1 and for \V{headline.cold_flip_queries_sf10} at SF10; at SF10 \CH's cold run was faster for \V{headline.cold_ch_faster_queries_sf10} (ratio \V{headline.cold_ch_faster_ratio_min}--\V{headline.cold_ch_faster_ratio_max}).
+\CH's HTTP interface adds little: its client latency exceeds the server's own query time by a median of \V{headline.ch_client_overhead_median_ms}\,ms.
 
 \begin{figure}[ht]
 \centering
@@ -195,32 +199,33 @@ At SF1 the cold runs ranked the engines as the warm runs did, but at SF10 \CH's 
 
 \textbf{Distribution and noise (E1--E3).} All \V{headline.n_combos} warm distributions are right-skewed, and the Shapiro--Wilk test rejects normality for \V{headline.n_shapiro_reject} of them, so medians are the right summary (E1 holds).
 The cold run took \V{headline.cold_over_warm_min} to \V{headline.cold_over_warm_max} times the warm median (median \V{headline.cold_over_warm_median}; E2 holds).
-E3 holds only partly: the CV was below 10\,\% in \V{headline.n_cv_below_10} of \V{headline.n_combos} combinations and reached \V{headline.cv_max_pct}\,\%.
-Most of the variation comes from a few slow outliers (Figure~\ref{fig:latency}), not from a wide spread.
+E3 holds only partly: the CV was below 10\,\% in \V{headline.n_cv_below_10} of \V{headline.n_combos} combinations and was up to \V{headline.cv_max_pct}\,\%.
+In most combinations the variation comes from a few slow outliers (Figure~\ref{fig:latency}), not from a wide spread.
 
 \textbf{Scaling (E4).} Figure~\ref{fig:scaling} shows that the lines of all queries run nearly parallel to the slope-1 reference.
-The fitted slopes lie between \V{headline.slope_min} and \V{headline.slope_max} (median \V{headline.slope_median}), so latency grows about linearly with data size and E4 holds.
-The CI excludes 1 for \V{headline.n_slope_ci_below_1} slopes below 1 and \V{headline.n_slope_ci_above_1} above 1 (\CH\ \Q21: \V{slope.ch21}), but with two SF points we cannot tell whether this is a real deviation from linearity or a fixed per-query cost.
+The fitted slopes lie between \V{headline.slope_min} and \V{headline.slope_max} (median \V{headline.slope_median}), so latency grows about linearly with data size, consistent with E4.
+The CI of $b$ excludes 1 for \V{headline.n_slope_ci_below_1} slopes below 1 and \V{headline.n_slope_ci_above_1} above 1 (largest: \CH\ \Q21, \V{slope.ch21}), but with two SF points we cannot tell whether this is a real deviation from linearity or a fixed per-query cost.
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.81\textwidth]{../figures/F2_scaling.pdf}
+\includegraphics[width=0.9\textwidth]{../figures/F2_scaling.pdf}
 \caption{Median warm latency against scale factor (both axes logarithmic). The thick grey line has slope 1 (latency proportional to SF).}
 \label{fig:scaling}
 \end{figure}
 
 \textbf{Memory (RQ2, E6--E7).} Figure~\ref{fig:memory} shows the peak container memory.
-\DK\ needed much less: \CH's median peak was \V{headline.peak_ratio_min_sf1}--\V{headline.peak_ratio_max_sf1} times \DK's at SF1 and \V{headline.peak_ratio_min_sf10}--\V{headline.peak_ratio_max_sf10} times at SF10.
+\DK's container needed much less memory: \CH's median container peak was \V{headline.peak_ratio_min_sf1}--\V{headline.peak_ratio_max_sf1} times \DK's at SF1 and \V{headline.peak_ratio_min_sf10}--\V{headline.peak_ratio_max_sf10} times at SF10.
 A large part of this is the idle footprint: right after a restart the \CH\ container already used \V{headline.idle_gib_clickhouse_sf1}\,GiB, against \V{headline.idle_gib_duckdb_sf1}\,GiB for \DK\ (SF1; E6 holds for memory).
 Peak memory grew with SF for every engine and query.
-The highest peak of any run was \V{headline.peak_max_gib}\,GiB (\CH, \Q18, SF10), well below the 7\,GiB limit, so no run spilled to disk and none failed.
-E7 therefore holds, but its second half (spilling instead of failing) was not tested.
+The highest peak of any query run was \V{headline.peak_max_gib}\,GiB (\CH, \Q18, SF10), well below the 7\,GiB limit, and no run failed.
+The engines' spill counters (\CH's query log, the size of \DK's temporary directory) show that \V{headline.n_runs_spilled} runs spilled to disk.
+E7 therefore holds in part: its second half (spilling instead of failing) was not tested.
 The two engines' own numbers are smaller than the container peaks, because the container also counts page cache and, for \CH, the idle server: the largest median was \V{headline.engine_peak_max_gib_clickhouse_sf10}\,GiB in \CH's query log and \V{headline.engine_peak_max_gib_duckdb_sf10}\,GiB of \DK\ process memory (SF10).
 
 \begin{figure}[ht]
 \centering
 \includegraphics[width=\textwidth]{../figures/F3_memory.pdf}
-\caption{Peak container memory during warm runs (bar: median; whisker: maximum over all 21 runs) and the container's memory right after restart (black dash). Dashed and dotted lines: engine and container limits.}
+\caption{Peak container memory per query (bar: median of the 20 warm runs; whisker: maximum over all 21 runs) and the container's memory right after restart (black dash; for \DK\ only \V{headline.idle_gib_duckdb_sf1}\,GiB at SF1, close to the axis). Dashed and dotted lines: engine and container limits.}
 \label{fig:memory}
 \end{figure}
 
@@ -249,12 +254,12 @@ In this pilot \DK\ is cheaper for any number of runs.
 With the exact CI, a half-width below 5\,\% was reached for \V{headline.order_share_below_5pct_n10_pct}\,\% of the combinations with 10 runs, \V{headline.order_share_below_5pct_n15_pct}\,\% with 15 runs and \V{headline.order_share_below_5pct_n20_pct}\,\% with 20 runs.
 With 20 runs the median half-width was \V{headline.order_median_halfwidth_n20_pct}\,\% and the largest \V{headline.order_max_halfwidth_n20_pct}\,\%.
 For \V{headline.n_min_n_not_reached} combinations even 20 runs were not enough.
-The bootstrap line shows why small samples are misleading: at $n = 3$ its median half-width is only \V{headline.boot_median_halfwidth_n3_pct}\,\%, but these intervals miss the true median one time in four.
+The bootstrap line shows why bootstrap CIs from small samples are misleading: at $n = 3$ its median half-width is only \V{headline.boot_median_halfwidth_n3_pct}\,\%, but these intervals miss the true median one time in four.
 
 \textbf{Searching for structure (PCA).} The first two components explain \V{pca.pc1_pct}\,\% and \V{pca.pc2_pct}\,\% of the variance (Figure~\ref{fig:pca}).
 The first component loads on all eight columns with the same sign, so it simply orders the queries from cheap (\Q6) to expensive (\Q9, \Q18).
 The second separates queries that are slow in \CH\ (\Q1, \Q21) from queries whose memory is high relative to their latency (\Q6, \Q9, \Q18).
-The queries do not group by our three classes: the two scan queries are far apart, and the join queries \Q5 and \Q9 lie at opposite ends of the first component.
+The queries do not group by our three classes: the two scan queries are far apart, and the join queries \Q5 and \Q9 lie on opposite sides of the first component. With only eight queries this is a weak test.
 A better model would describe each query by its cost drivers (rows scanned, join sizes, number of groups) rather than by one class.
 
 \begin{figure}[ht]
@@ -284,23 +289,28 @@ Table~\ref{tab:needs} compares what the pilot collected with what we now think t
 \toprule
 Item & Pilot & Full study & Reason (from this pilot) \\
 \midrule
-Warm runs per combination & 20 & at least 20, more where needed & 20 runs gave a CI half-width below 5\,\% for \V{headline.order_share_below_5pct_n20_pct}\,\% of the combinations; 10 runs only for \V{headline.order_share_below_5pct_n10_pct}\,\% \\
+Warm runs per combination & 20 & at least 20; continue until the exact-CI half-width is below 5\,\%, at most 40 & 20 runs gave a CI half-width below 5\,\% for \V{headline.order_share_below_5pct_n20_pct}\,\% of the combinations; 10 runs only for \V{headline.order_share_below_5pct_n10_pct}\,\% \\
 Cold runs per combination & 1 & 8 (at least 6) & one run gives no CI; an exact 95\,\% CI of a median needs at least 6 runs \\
-Loads per engine and SF & 3 & at least 5 & the research plan's minimum for a significant Mann--Whitney test after Holm correction \\
+Loads per engine and SF & 3 & at least 5 & with 5 against 5 loads the smallest two-sided Mann--Whitney $p$ is \V{headline.mw_min_p_5v5}, below the Holm threshold for two SFs \\
 Scale factors & 1, 10 & 1, 3, 10 & two points always fit the scaling model; a third point gives a residual to test it \\
-Memory pressure & none & a larger SF or a smaller budget & the highest peak was \V{headline.peak_max_gib}\,GiB, so spilling was never exercised \\
-Concurrency & one query at a time & also two and four clients & ``who queries the data'' was the deciding factor in our qualitative exercise \\
+Memory pressure & none & also SF30, or a 4\,GiB budget & the highest query peak was \V{headline.peak_max_gib}\,GiB and no run spilled \\
+Concurrency & one query at a time & also two and four clients & in our qualitative exercise, both simulated practitioners named the number of users querying the data as the deciding factor \\
 Configuration & defaults & plus one \CH\ variant & \texttt{Float64} instead of \texttt{Decimal} or stronger compression may change RQ1 and RQ2 \\
 Machine & laptop, Linux VM & dedicated Linux machine & no hidden macOS page cache; as in the research plan \\
+\midrule
+Total query runs & \V{headline.n_runs} & at least \V{headline.full_study_query_runs} & 2 engines $\times$ 3 SFs $\times$ 8 queries $\times$ (8 cold + 20 warm); the pilot's loads took \V{headline.pilot_load_minutes} and its queries \V{headline.pilot_query_minutes} minutes \\
 \bottomrule
 \end{tabularx}
 \end{table}
+
+\FloatBarrier
 
 \section{Discussion (e)}
 
 \textbf{Did the results match our expectations?} Partly.
 Skewed latency, slow cold runs and linear scaling all appeared, and \DK\ loaded faster and used less memory, as expected.
-The main surprise is RQ1: we expected \CH\ to be faster on join and aggregation queries, but \DK\ was faster in \V{headline.n_duck_faster} of \V{headline.n_comparisons} comparisons, and \CH's tables were also larger on disk.
+The main surprise is RQ1: we expected \CH\ to be faster on join and aggregation queries, but \DK\ was faster in \V{headline.n_duck_faster} of \V{headline.n_comparisons} comparisons.
+For RQ2, \CH's tables were also larger on disk than we expected.
 Warm runs were also noisier than we assumed.
 
 \textbf{Which data were most useful?} The warm runs answered RQ1, the idle and peak container memory explained most of RQ2 (much of \CH's extra memory is its idle footprint), and the load times decided RQ3.

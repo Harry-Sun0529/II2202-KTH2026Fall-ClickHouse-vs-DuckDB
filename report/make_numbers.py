@@ -47,7 +47,8 @@ HEAD_DEC = {
     "idle_gib_clickhouse_sf1": 2, "idle_gib_duckdb_sf1": 2,
     "engine_peak_max_gib_clickhouse_sf10": 2, "engine_peak_max_gib_duckdb_sf10": 2,
     "load_ratio_sf1": 1, "load_ratio_sf10": 1, "disk_ratio_sf1": 2, "disk_ratio_sf10": 2,
-    "max_p_holm_significant": 4, "ch_client_overhead_median_ms": 1, "peak_max_gib": 2,
+    "max_p_holm_significant": 4, "mw_min_p_5v5": 3, "pilot_load_minutes": 0, "pilot_query_minutes": 0,
+    "ch_engine_peak_max_gib": 2, "full_study_query_runs": 0, "ch_client_overhead_median_ms": 1, "peak_max_gib": 2,
     "order_share_below_5pct_n10_pct": 0, "order_share_below_5pct_n15_pct": 0, "order_share_below_5pct_n20_pct": 0,
     "order_median_halfwidth_n20_pct": 1, "order_max_halfwidth_n20_pct": 1, "boot_median_halfwidth_n3_pct": 1,
 }
@@ -75,7 +76,10 @@ def resolve(key: str) -> str:
     ns, name = key.split(".", 1)
     if ns == "headline":
         base, scale = (name[:-4], 100) if name.endswith("_pct") and name not in KV["headline"] else (name, 1)
-        raw = float(KV["headline"][base])
+        try:
+            raw = float(KV["headline"][base])
+        except ValueError:  # text facts such as a list of query names
+            return record(key, "headline.csv", f"key={base}", "value", KV["headline"][base], tex_escape(KV["headline"][base]))
         dec = HEAD_DEC.get(name, 0 if base.startswith("n_") else 2)
         return record(key, "headline.csv", f"key={base}", "value", raw, fmt_num(raw * scale, dec))
     if ns == "setup":
@@ -189,7 +193,7 @@ def load_table() -> str:
     body = "\n".join(lines)
     return rf"""\begin{{table}}[ht]
 \centering\footnotesize
-\caption{{Loads (3 per engine and SF): import time median (min--max), merge (\CH) or checkpoint (\DK) time, total; footprint on disk and relative to the Parquet input; peak container / anonymous memory during the load; container memory right after restart (median over the cold runs).}}
+\caption{{Loads (3 per engine and SF). Each column is the median of its own three values, so Total need not equal Import + Merge/ckpt: import time (min--max), merge (\CH) or checkpoint (\DK) time, total; disk footprint and its ratio to the Parquet input (computed from unrounded sizes); peak container / anonymous memory during the load (maximum); container memory right after restart (median over the cold runs). GB = $10^9$ bytes, GiB = $2^{{30}}$ bytes.}}
 \label{{tab:load}}
 \setlength{{\tabcolsep}}{{4pt}}
 \begin{{tabular}}{{@{{}}lrrrrrrrr@{{}}}}

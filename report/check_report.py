@@ -47,6 +47,7 @@ WHITELIST = {
     "21": "21 runs per block = 1 cold + 20 warm",
     "75": "theoretical coverage 1 - 2 (1/2)^3 = 75 % of the bootstrap CI at n = 3 (tested in test_stats.py)",
     "95": "95 % confidence level",
+    "40": "proposed cap of 40 warm runs per combination (Table 5, a plan for the full study)",
     "10000": "10,000 bootstrap resamples (analysis/stats.py B_DEFAULT)",
     "0.001": "display bound '< 0.001' for p-values in Table 3",
     "3.12": "python:3.12-slim base image (docker/duckdb/Dockerfile)",
