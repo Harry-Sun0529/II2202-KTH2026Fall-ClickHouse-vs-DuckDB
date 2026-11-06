@@ -1,6 +1,8 @@
 key,file,selector,column,raw,shown
 be.sf1,breakeven.csv,"sf=1,load_basis=total_s",n_star,-21.610539456394402,$-$21.6
 be.sf10,breakeven.csv,"sf=10,load_basis=total_s",n_star,-20.001193123044235,$-$20.0
+headline.added_peak_max_gib_clickhouse_sf10,headline.csv,key=added_peak_max_gib_clickhouse_sf10,value,1.097433090209961,1.10
+headline.added_peak_max_gib_duckdb_sf10,headline.csv,key=added_peak_max_gib_duckdb_sf10,value,0.11543655395507812,0.12
 headline.ch_client_overhead_median_ms,headline.csv,key=ch_client_overhead_median_ms,value,0.767000000000003,0.8
 headline.cold_ch_faster_queries_sf10,headline.csv,key=cold_ch_faster_queries_sf10,value,"Q6, Q3, Q13","Q6, Q3, Q13"
 headline.cold_ch_faster_ratio_max,headline.csv,key=cold_ch_faster_ratio_max,value,0.9307117645299274,0.93
