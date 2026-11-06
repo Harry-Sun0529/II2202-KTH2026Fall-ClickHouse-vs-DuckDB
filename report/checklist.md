@@ -2,7 +2,7 @@
 
 Report: `report/II2202_Quantitative_Exercise.pdf` (8 pages). Checked 2026-11-05.
 
-**2026-11-07, branch `report-plan-alignment`:** 'Research plan' paragraph and Table 5 (deviations from the plan) at the end of §5, H1–H3 judged with the plan's rules, the plan's peak-minus-baseline metric, ethics and sustainability in §8, load throughput, source of the reference answers, aborted load campaign; light humanizer pass on the prose. No AI-use statement (group decision). Expected about 9 pages. The PDF in the repo is still the old build: run `make report` before you submit.
+**2026-11-07, branch `report-plan-alignment`:** 'Research plan' paragraph and Table 5 (deviations from the plan) at the end of §5, H1–H3 judged with the plan's rules, the plan's peak-minus-baseline metric, ethics and sustainability in §8, load throughput, source of the reference answers, aborted load campaign; light humanizer pass on the prose. No AI-use statement (group decision). The PDF now has 9 pages. It was built on Windows with Tectonic 0.17 (XeTeX) and the Source Sans 3.052 OTF files, because Docker was not available; Gate 4 passed on that build. `make report` (LuaLaTeX in texlive) gives the same text, but the line breaks can differ slightly. The PDF in the repo is still the old build: run `make report` before you submit.
 
 ## Step 1 (analysis in Python)
 
@@ -71,7 +71,7 @@ Report: `report/II2202_Quantitative_Exercise.pdf` (8 pages). Checked 2026-11-05.
 | 26 | minor | Wording ("reached", "small samples") | Fixed |
 | A | — | Analysis tool never named | Fixed: Python (pandas, SciPy, statsmodels, matplotlib) |
 
-Not changed on purpose: page count. The plan's target was 4–6 pages; the report has 8 because of six figures, five tables and the review fixes. The assignment itself sets no length.
+Not changed on purpose: page count. The plan's target was 4–6 pages; the report has 9 (8 before the research-plan table) because of six figures, five tables and the review fixes. The assignment itself sets no length.
 
 ## Still for the students
 

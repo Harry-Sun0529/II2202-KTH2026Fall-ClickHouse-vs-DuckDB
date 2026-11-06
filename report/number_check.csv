@@ -27,7 +27,7 @@ token,status,source
 4,constant,4 CPUs / 4 threads (config.yaml container_limits.cpus)
 4,constant,4 CPUs / 4 threads (config.yaml container_limits.cpus)
 3,constant,3 loads per engine and SF (config.yaml repetitions.load); n = 3; 3 GiB spill threshold
-20,constant,20 warm runs (config.yaml repetitions.warm); n = 20
+20,constant,20 warm runs (config.yaml repetitions.warm); n = 20; research plan H2: within 20 %
 672,ok,headline.csv[45].value (text) (identity)
 12,constant,12 loads = 2 engines x 2 SF x 3 (config.yaml)
 "1,",constant,SF1; slope 1; join_use_nulls = 1; 'n > 0' style bounds
@@ -44,7 +44,9 @@ token,status,source
 1,constant,SF1; slope 1; join_use_nulls = 1; 'n > 0' style bounds
 99.7,ok,memory_check.csv[0].share_gap_below_1pct (percent)
 2.0,ok,comparison.csv[1].cold_ratio_ch_over_duck (identity)
-20,constant,20 warm runs (config.yaml repetitions.warm); n = 20
+1.10,ok,headline.csv[77].value (text) (identity)
+0.12,ok,headline.csv[80].value (text) (identity)
+20,constant,20 warm runs (config.yaml repetitions.warm); n = 20; research plan H2: within 20 %
 95,constant,95 % confidence level
 10000,constant,"10,000 bootstrap resamples (analysis/stats.py B_DEFAULT)"
 0,constant,ClickHouse fills unmatched rows with 0 (explanation of the Q13 edit); 0 in join_use_nulls context
@@ -54,11 +56,10 @@ token,status,source
 "6,",constant,"n = 6, smallest n with an exact 95 % CI (order_stat_k(6) = 1, tested)"
 "10,",constant,SF10; 10 % CV threshold (plan 5.1); n = 10
 "15,",constant,n = 15 (plan 5.3 item 5)
-20,constant,20 warm runs (config.yaml repetitions.warm); n = 20
+20,constant,20 warm runs (config.yaml repetitions.warm); n = 20; research plan H2: within 20 %
 5,constant,5 % target half-width (plan 5.3 item 5); n = 5; 5 loads recommended (research plan)
 3,constant,3 loads per engine and SF (config.yaml repetitions.load); n = 3; 3 GiB spill threshold
 75,constant,theoretical coverage 1 - 2 (1/2)^3 = 75 % of the bootstrap CI at n = 3 (tested in test_stats.py)
-95,constant,95 % confidence level
 6,constant,"n = 6, smallest n with an exact 95 % CI (order_stat_k(6) = 1, tested)"
 3,constant,3 loads per engine and SF (config.yaml repetitions.load); n = 3; 3 GiB spill threshold
 5,constant,5 % target half-width (plan 5.3 item 5); n = 5; 5 loads recommended (research plan)
@@ -74,14 +75,14 @@ token,status,source
 0.29,ok,comparison.csv[15].p (identity)
 15,constant,n = 15 (plan 5.3 item 5)
 0.001,constant,display bound '< 0.001' for p-values in Table 3
-20,constant,20 warm runs (config.yaml repetitions.warm); n = 20
+20,constant,20 warm runs (config.yaml repetitions.warm); n = 20; research plan H2: within 20 %
 2.97,ok,comparison.csv[4].ratio_ch_over_duck (identity)
 0.87,ok,comparison.csv[6].ratio_lo (identity)
 0.93,ok,comparison.csv[15].ratio_lo (identity)
 0.8,ok,comparison.csv[7].speedup_duck_over_ch (identity)
-20,constant,20 warm runs (config.yaml repetitions.warm); n = 20
+20,constant,20 warm runs (config.yaml repetitions.warm); n = 20; research plan H2: within 20 %
 1.5,ok,comparison.csv[3].cold_ratio_ch_over_duck (identity)
-20,constant,20 warm runs (config.yaml repetitions.warm); n = 20
+20,constant,20 warm runs (config.yaml repetitions.warm); n = 20; research plan H2: within 20 %
 95,constant,95 % confidence level
 95,constant,95 % confidence level
 1,constant,SF1; slope 1; join_use_nulls = 1; 'n > 0' style bounds
@@ -307,11 +308,17 @@ token,status,source
 0,constant,ClickHouse fills unmatched rows with 0 (explanation of the Q13 edit); 0 in join_use_nulls context
 1.69,ok,headline.csv[59].value (text) (identity)
 1.44,ok,headline.csv[61].value (text) (identity)
-20,constant,20 warm runs (config.yaml repetitions.warm); n = 20
+20,constant,20 warm runs (config.yaml repetitions.warm); n = 20; research plan H2: within 20 %
 21,constant,21 runs per block = 1 cold + 20 warm
 0.08,ok,headline.csv[51].value (text) (identity)
 3.0,ok,comparison.csv[5].query_id (identity)
 3.3,ok,comparison.csv[0].ratio_lo (identity)
+2.8,ok,comparison.csv[5].ratio_ch_over_duck (identity)
+3.2,ok,breakeven.csv[0].L_duck_s (identity)
+1.7,ok,comparison.csv[10].peak_ratio_ch_over_duck (identity)
+1.8,ok,comparison.csv[8].cold_ratio_ch_over_duck (identity)
+0.9,ok,comparison.csv[6].ratio_ch_over_duck (identity)
+1.0,ok,breakeven.csv[0].sf (identity)
 1.57,ok,headline.csv[54].value (text) (identity)
 1.69,ok,headline.csv[59].value (text) (identity)
 8,constant,8 GiB container limit; 8 queries; 8 cold runs in the research plan
@@ -320,7 +327,7 @@ token,status,source
 10,constant,SF10; 10 % CV threshold (plan 5.1); n = 10
 9,ok,comparison.csv[3].query_id (identity)
 2,constant,sampling interval 2 ms (config.yaml memory_sampler.interval_ms); 'two' style counts
-30,ok,summary.csv[18].warm_max_ms (identity)
+30,constant,research plan: system.merges empty for 30 s (deviations table)
 1,constant,SF1; slope 1; join_use_nulls = 1; 'n > 0' style bounds
 5.2,ok,breakeven.csv[1].L_ch_s (identity)
 5.0,ok,comparison.csv[2].query_id (identity)
@@ -375,22 +382,39 @@ token,status,source
 62,ok,comparison.csv[6].ch_median_ms (identity)
 15,constant,n = 15 (plan 5.3 item 5)
 84,ok,summary.csv[6].ci_hi_ms (identity)
-20,constant,20 warm runs (config.yaml repetitions.warm); n = 20
-20,constant,20 warm runs (config.yaml repetitions.warm); n = 20
+20,constant,20 warm runs (config.yaml repetitions.warm); n = 20; research plan H2: within 20 %
+20,constant,20 warm runs (config.yaml repetitions.warm); n = 20; research plan H2: within 20 %
 3.2,ok,breakeven.csv[0].L_duck_s (identity)
 9.7,ok,load_summary.csv[0].total_min_s (identity)
 5,constant,5 % target half-width (plan 5.3 item 5); n = 5; 5 loads recommended (research plan)
-20,constant,20 warm runs (config.yaml repetitions.warm); n = 20
-3,constant,3 loads per engine and SF (config.yaml repetitions.load); n = 3; 3 GiB spill threshold
-7.1,ok,headline.csv[94].value (text) (percent)
+20,constant,20 warm runs (config.yaml repetitions.warm); n = 20; research plan H2: within 20 %
 69,ok,summary.csv[20].ci_lo_ms (identity)
 17,ok,pca_variance.csv[1].explained (percent)
 95,constant,95 % confidence level
-20,constant,20 warm runs (config.yaml repetitions.warm); n = 20
-20,constant,20 warm runs (config.yaml repetitions.warm); n = 20
+0,constant,ClickHouse fills unmatched rows with 0 (explanation of the Q13 edit); 0 in join_use_nulls context
+10,constant,SF10; 10 % CV threshold (plan 5.1); n = 10
+20,constant,20 warm runs (config.yaml repetitions.warm); n = 20; research plan H2: within 20 %
+0,constant,ClickHouse fills unmatched rows with 0 (explanation of the Q13 edit); 0 in join_use_nulls context
+3,constant,3 loads per engine and SF (config.yaml repetitions.load); n = 3; 3 GiB spill threshold
+0.10,ok,headline.csv[86].value (text) (identity)
+0.8,ok,comparison.csv[7].speedup_duck_over_ch (identity)
+8,constant,8 GiB container limit; 8 queries; 8 cold runs in the research plan
+7,constant,7 GiB engine memory limit (config.yaml)
+8,constant,8 GiB container limit; 8 queries; 8 cold runs in the research plan
+3,constant,3 loads per engine and SF (config.yaml repetitions.load); n = 3; 3 GiB spill threshold
+8,constant,8 GiB container limit; 8 queries; 8 cold runs in the research plan
+10,constant,SF10; 10 % CV threshold (plan 5.1); n = 10
+1,constant,SF1; slope 1; join_use_nulls = 1; 'n > 0' style bounds
+20,constant,20 warm runs (config.yaml repetitions.warm); n = 20; research plan H2: within 20 %
+10,constant,SF10; 10 % CV threshold (plan 5.1); n = 10
 5,constant,5 % target half-width (plan 5.3 item 5); n = 5; 5 loads recommended (research plan)
-40,constant,"proposed cap of 40 warm runs per combination (Table 5, a plan for the full study)"
-20,constant,20 warm runs (config.yaml repetitions.warm); n = 20
+3,constant,3 loads per engine and SF (config.yaml repetitions.load); n = 3; 3 GiB spill threshold
+30,constant,research plan: system.merges empty for 30 s (deviations table)
+20,constant,20 warm runs (config.yaml repetitions.warm); n = 20; research plan H2: within 20 %
+20,constant,20 warm runs (config.yaml repetitions.warm); n = 20; research plan H2: within 20 %
+5,constant,5 % target half-width (plan 5.3 item 5); n = 5; 5 loads recommended (research plan)
+40,constant,"proposed cap of 40 warm runs per combination (data-needed table, a plan for the full study)"
+20,constant,20 warm runs (config.yaml repetitions.warm); n = 20; research plan H2: within 20 %
 5,constant,5 % target half-width (plan 5.3 item 5); n = 5; 5 loads recommended (research plan)
 84,ok,summary.csv[6].ci_hi_ms (identity)
 10,constant,SF10; 10 % CV threshold (plan 5.1); n = 10
@@ -404,7 +428,7 @@ token,status,source
 5,constant,5 % target half-width (plan 5.3 item 5); n = 5; 5 loads recommended (research plan)
 5,constant,5 % target half-width (plan 5.3 item 5); n = 5; 5 loads recommended (research plan)
 5,constant,5 % target half-width (plan 5.3 item 5); n = 5; 5 loads recommended (research plan)
-0.008,ok,headline.csv[69].value (text) (identity)
+0.008,ok,headline.csv[72].value (text) (identity)
 "1,",constant,SF1; slope 1; join_use_nulls = 1; 'n > 0' style bounds
 10,constant,SF10; 10 % CV threshold (plan 5.1); n = 10
 "1,",constant,SF1; slope 1; join_use_nulls = 1; 'n > 0' style bounds
@@ -413,13 +437,15 @@ token,status,source
 4,constant,4 CPUs / 4 threads (config.yaml container_limits.cpus)
 4.89,ok,expectations.csv[12].value (identity)
 672,ok,headline.csv[45].value (text) (identity)
-1344,ok,headline.csv[72].value (text) (identity)
+1344,ok,headline.csv[90].value (text) (identity)
 2,constant,sampling interval 2 ms (config.yaml memory_sampler.interval_ms); 'two' style counts
 3,constant,3 loads per engine and SF (config.yaml repetitions.load); n = 3; 3 GiB spill threshold
 8,constant,8 GiB container limit; 8 queries; 8 cold runs in the research plan
 8,constant,8 GiB container limit; 8 queries; 8 cold runs in the research plan
-20,constant,20 warm runs (config.yaml repetitions.warm); n = 20
+20,constant,20 warm runs (config.yaml repetitions.warm); n = 20; research plan H2: within 20 %
 7,constant,7 GiB engine memory limit (config.yaml)
 6,constant,"n = 6, smallest n with an exact 95 % CI (order_stat_k(6) = 1, tested)"
 13,ok,comparison.csv[6].query_id (identity)
 16,ok,headline.csv[0].value (text) (identity)
+7,constant,7 GiB engine memory limit (config.yaml)
+6,constant,"n = 6, smallest n with an exact 95 % CI (order_stat_k(6) = 1, tested)"

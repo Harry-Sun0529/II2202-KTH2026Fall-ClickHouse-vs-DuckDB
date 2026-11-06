@@ -42,6 +42,7 @@
 \titleformat{\subsection}{\large\bfseries}{\thesubsection}{1em}{}
 \titlespacing*{\section}{0pt}{10pt}{5pt}
 \titlespacing*{\subsection}{0pt}{9pt}{4pt}
+\setlength{\emergencystretch}{2em}  % lets lines with long \texttt flags break without overflowing
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{4.5pt}
 \captionsetup{font=small,labelfont=bf,skip=4pt}
@@ -81,7 +82,7 @@ The query texts are the TPC-H queries with the default substitution parameters, 
 Without it \CH\ fills unmatched rows of the outer join with 0 instead of NULL, and the result is wrong.
 
 \textbf{Systems and set-up.} Table~\ref{tab:setup} lists the configuration.
-Each engine runs in its own Docker container with \texttt{--memory=8g --memory-swap=8g --cpus=4}, pinned to the same four virtual CPUs (\texttt{--cpuset-cpus=0-3}); during measurements only one engine container runs at a time.
+Each engine runs in its own Docker container with \texttt{--memory=8g} \texttt{--memory-swap=8g} \texttt{--cpus=4}, pinned to the same four virtual CPUs (\texttt{--cpuset-cpus=0-3}); during measurements only one engine container runs at a time.
 \DK\ is embedded, so its container runs a small Python process that holds the connection, as an application would; a driver container on the other four virtual CPUs runs the experiment.
 The host is a laptop (\V{setup.cpu_model}, \V{setup.host_cores} cores, \V{setup.host_mem_gib}\,GiB) running Docker Desktop (Docker Engine \V{setup.docker_version}), whose Linux virtual machine has \V{setup.docker_vm_mem_mib}\,MiB of memory and kernel \V{setup.kernel}.
 
