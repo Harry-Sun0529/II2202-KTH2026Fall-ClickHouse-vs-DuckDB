@@ -43,7 +43,7 @@ WHITELIST = {
     "10": "SF10; 10 % CV threshold (plan 5.1); n = 10",
     "12": "12 loads = 2 engines x 2 SF x 3 (config.yaml)",
     "15": "n = 15 (plan 5.3 item 5)",
-    "20": "20 warm runs (config.yaml repetitions.warm); n = 20",
+    "20": "20 warm runs (config.yaml repetitions.warm); n = 20; research plan H2: within 20 %",
     "21": "21 runs per block = 1 cold + 20 warm",
     "75": "theoretical coverage 1 - 2 (1/2)^3 = 75 % of the bootstrap CI at n = 3 (tested in test_stats.py)",
     "95": "95 % confidence level",

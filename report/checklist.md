@@ -2,6 +2,8 @@
 
 Report: `report/II2202_Quantitative_Exercise.pdf` (8 pages). Checked 2026-11-05.
 
+**2026-11-07, branch `report-plan-alignment`:** a short 'Research plan' paragraph at the end of §5 (deviations, H1–H3 with the plan's rules), ethics and sustainability in §8, load throughput, source of the reference answers, aborted load campaign. Report text +136 words; no new section, table or figure. No AI-use statement (group decision). The PDF in the repo is still the old build: run `make report` before you submit.
+
 ## Step 1 (analysis in Python)
 
 | Requirement | Status | Where |
@@ -25,6 +27,9 @@ Report: `report/II2202_Quantitative_Exercise.pdf` (8 pages). Checked 2026-11-05.
 | (d) Results with figures/tables referenced and explained in words | ✅ | §5: Figures 1–6, Tables 3–4 all referenced and explained |
 | (e) Discussion ≥ 100 words: expectations met/different? most useful data? more data? generality and accuracy? | ✅ | §7, 265 words (source count by `check_report.py`); all four questions answered |
 | Section on what data, and how much, the group must collect | ✅ | §6 + Table 5 (repetitions, cold runs, loads, scale factors, memory pressure, concurrency, configuration, machine, total runs) |
+
+| Deviations from the research plan listed, H1–H3 evaluated with the plan's rules | ✅ | §5 'Research plan' paragraph; H1 0/10, H2 0/3, H3 direction only (3 loads, min p 0.10) |
+| Ethics and sustainability | ✅ | §8 (Reproducibility, ethics and sustainability) |
 
 ## Gate 4 (automatic, `make report`)
 

@@ -110,7 +110,7 @@ For each engine, SF and query we then restarted the engine, emptied the page cac
 This gives \V{headline.n_runs} query runs and 12 loads.
 Latency is measured at the client for \CH\ (HTTP request until the full result is received) and in-process around execute and fetch for \DK; Table~\ref{tab:latency} reports these values.
 Query order was shuffled with a fixed seed.
-Before any timing, a correctness check compared every result at SF1 with the TPC-H reference answers, and compared the two engines with each other at both SFs.
+Before any timing, a correctness check compared every result at SF1 with the TPC-H reference answers (the copy shipped in \DK's \texttt{tpch} extension, \texttt{tpch\_answers()}), and compared the two engines with each other at both SFs.
 All checks passed, and every timed run returned the verified result.
 
 \section{Variables and expected properties (b)}
@@ -152,6 +152,7 @@ Disk footprint & dependent, continuous & bytes on disk after loading \\
 \section{Data analysis (c)}
 
 \textbf{Preprocessing.} The driver writes one CSV row per run, and we analyse the files in Python (pandas, SciPy, statsmodels, matplotlib). A script checks that all \V{headline.n_runs} runs and 12 loads are present, every result is correct, every latency is positive and no peak exceeds 8\,GiB. No run failed and no row was removed.
+A first load campaign, stopped to add a memory column, is kept in \texttt{results/aborted/} and not used.
 
 \textbf{Measurement of memory.} \CH\ is a server while \DK\ shares a process with its host, so there is no common process boundary; we measure both at the container.
 The driver reads the container's \texttt{memory.current} every 2\,ms during each run (actual median interval \V{memory.median_interval_ms}\,ms, maximum \V{memory.max_interval_ms}\,ms) and takes the maximum.
@@ -170,7 +171,7 @@ With only two SF values the line passes exactly through both medians, so it has 
 \item Break-even (RQ3): the total cost of loading once and running the query set $n$ times is $T(n) = L + n\,q$, where $L$ is the median load time (import plus merge or checkpoint) and $q$ the sum of the eight median warm latencies.
 With $A$ = \CH\ and $B$ = \DK, the lines cross at $n^* = (L_A - L_B)/(q_B - q_A)$; if $n^* \le 0$, one engine is cheaper for every $n$.
 \item How much data is needed: we recomputed the 95\,\% CI of the median from only the first $n$ warm runs ($n$ = 3, 5, 6, 10, 15, 20) and looked for the smallest $n$ with a relative half-width below 5\,\%.
-We use the exact distribution-free CI based on order statistics~\cite{leboudec} instead of the bootstrap CI, because the bootstrap CI is far too narrow for tiny samples: at $n = 3$ it is the range of the three values and contains the true median only 75\,\% of the time (confirmed in a simulation test). The exact 95\,\% CI needs $n \ge 6$, so $n$ = 3 and 5 are shown only with the bootstrap.
+We use the exact distribution-free CI based on order statistics~\cite{leboudec}, because the bootstrap CI is too narrow for tiny samples (at $n = 3$ it is the range of the three values and contains the true median only 75\,\% of the time). The exact CI needs $n \ge 6$, so $n$ = 3 and 5 are shown only with the bootstrap.
 \item Searching for a model (PCA): we built a matrix with one row per query and eight columns (log median latency and log median peak memory for each engine and SF), standardised the columns and ran a principal component analysis, to see whether the queries group by our three classes.
 \end{enumerate}
 
@@ -231,6 +232,7 @@ The two engines' own numbers are smaller than the container peaks, because the c
 
 \textbf{Load time and disk (RQ2--RQ3, E6, E8).} Table~\ref{tab:load} lists the loads.
 \DK\ loaded \V{headline.load_ratio_sf1} times faster at SF1 and \V{headline.load_ratio_sf10} times faster at SF10 (E6 holds).
+Import throughput was \V{headline.import_mrows_s_duckdb_sf1}--\V{headline.import_mrows_s_duckdb_sf10} million rows/s for \DK\ and \V{headline.import_mrows_s_clickhouse_sf1}--\V{headline.import_mrows_s_clickhouse_sf10} for \CH\ (\V{headline.total_mrows_s_clickhouse_sf1}--\V{headline.total_mrows_s_clickhouse_sf10} with the merge).
 For \CH, the forced merge takes almost as long as the import itself, while \DK's final checkpoint at SF10 takes only milliseconds because \DK\ already writes checkpoints during the import.
 E8 does not hold: \CH's tables took \V{headline.disk_ratio_sf1} (SF1) and \V{headline.disk_ratio_sf10} (SF10) times the space of the \DK\ file, and more than the Parquet input, while the \DK\ file was smaller than the Parquet input.
 A likely reason is that \CH\ by default compresses with LZ4, which favours speed over size, but we did not test this.
@@ -254,7 +256,6 @@ In this pilot \DK\ is cheaper for any number of runs.
 With the exact CI, a half-width below 5\,\% was reached for \V{headline.order_share_below_5pct_n10_pct}\,\% of the combinations with 10 runs, \V{headline.order_share_below_5pct_n15_pct}\,\% with 15 runs and \V{headline.order_share_below_5pct_n20_pct}\,\% with 20 runs.
 With 20 runs the median half-width was \V{headline.order_median_halfwidth_n20_pct}\,\% and the largest \V{headline.order_max_halfwidth_n20_pct}\,\%.
 For \V{headline.n_min_n_not_reached} combinations even 20 runs were not enough.
-The bootstrap line shows why bootstrap CIs from small samples are misleading: at $n = 3$ its median half-width is only \V{headline.boot_median_halfwidth_n3_pct}\,\%, but these intervals miss the true median one time in four.
 
 \textbf{Searching for structure (PCA).} The first two components explain \V{pca.pc1_pct}\,\% and \V{pca.pc2_pct}\,\% of the variance (Figure~\ref{fig:pca}).
 The first component loads on all eight columns with the same sign, so it simply orders the queries from cheap (\Q6) to expensive (\Q9, \Q18).
@@ -275,6 +276,9 @@ A better model would describe each query by its cost drivers (rows scanned, join
 \label{fig:pca}
 \end{minipage}
 \end{figure}
+
+\textbf{Research plan.} Apart from the machine and the run counts (Table~\ref{tab:needs}), the pilot differs from our plan in its data and queries (\DK's \texttt{tpch} extension, Parquet), \CH's HTTP client, 7\,GiB limits with 3\,GiB \CH\ spill thresholds, container memory, a forced merge and no \texttt{grace\_hash} check.
+Under the plan's rules, H1 (\CH\ faster on scan and aggregation; our E5 said join) holds for \V{headline.h1_n_supported} of \V{headline.h1_n_tests} comparisons and H2 (joins at SF1 within 20\,\%) for \V{headline.h2_n_supported} of \V{headline.h2_n_tests}, so both are rejected; H3 (\DK\ loads faster) holds in direction, but three loads cannot be significant (smallest $p$ = \V{headline.mw_min_p_3v3}).
 
 \section{Data needed for the full experiment}
 \label{sec:needs}
@@ -323,8 +327,9 @@ We used one laptop with a Linux virtual machine under macOS (whose own page cach
 The engines' own memory numbers also measure different things.
 The pilot therefore shows which data the full study needs; it does not yet show which engine is better in general.
 
-\section{Reproducibility}
+\section{Reproducibility, ethics and sustainability}
 
+The data are synthetic and no people are involved; we report all runs. The pilot used one laptop for about \V{headline.pilot_load_minutes}\,+\,\V{headline.pilot_query_minutes} minutes, and the stopping rule of Table~\ref{tab:needs} avoids unneeded runs.
 All scripts, configuration, query texts, raw CSV files and this report are in our repository; \texttt{make all} rebuilds everything from data generation to this PDF, and a script checks that every number in the report comes from \texttt{results/stats/*.csv}.
 
 
