@@ -397,6 +397,7 @@ token,status,source
 0,constant,ClickHouse fills unmatched rows with 0 (explanation of the Q13 edit); 0 in join_use_nulls context
 3,constant,3 loads per engine and SF (config.yaml repetitions.load); n = 3; 3 GiB spill threshold
 0.10,ok,headline.csv[86].value (text) (identity)
+4,constant,4 CPUs / 4 threads (config.yaml container_limits.cpus)
 0.8,ok,comparison.csv[7].speedup_duck_over_ch (identity)
 8,constant,8 GiB container limit; 8 queries; 8 cold runs in the research plan
 7,constant,7 GiB engine memory limit (config.yaml)

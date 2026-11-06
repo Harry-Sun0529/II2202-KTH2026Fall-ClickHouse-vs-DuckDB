@@ -13,6 +13,7 @@
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{tabularx}
+\usepackage{xltabular}
 \usepackage{array}
 \usepackage{enumitem}
 \usepackage{amsmath}
@@ -283,14 +284,22 @@ Judged by the plan's own decision rules, H1 and H2 are rejected.
 H1 (\CH\ faster on scan and aggregation queries; our E5 named joins instead of scans) holds for \V{headline.h1_n_supported} of \V{headline.h1_n_tests} comparisons, and H2 (join queries at SF1 within 20\,\%) for \V{headline.h2_n_supported} of \V{headline.h2_n_tests}.
 H3 (\DK\ loads faster) holds in direction, but with three loads per engine no test can be significant (smallest possible $p$ = \V{headline.mw_min_p_3v3}).
 
-\begin{table}[!ht]
-\centering\footnotesize
+% In-text table that may continue on the next page, so it fills the space before the floats.
+{\footnotesize
+\begin{xltabular}{\textwidth}{@{}>{\raggedright\arraybackslash}p{2.1cm}>{\raggedright\arraybackslash}p{3.6cm}>{\raggedright\arraybackslash}p{3.6cm}L@{}}
 \caption{Differences between the research plan and this pilot, and what they mean for the results.}
-\label{tab:deviations}
-\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{2.1cm}>{\raggedright\arraybackslash}p{3.6cm}>{\raggedright\arraybackslash}p{3.6cm}L@{}}
+\label{tab:deviations}\\
 \toprule
 Item & Research plan & Pilot & Consequence \\
 \midrule
+\endfirsthead
+\multicolumn{4}{@{}l}{\itshape Table~\ref{tab:deviations} (continued)}\\
+\toprule
+Item & Research plan & Pilot & Consequence \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
 Machine & dedicated Linux machine & laptop, Linux VM under Docker Desktop & host page cache cannot be emptied; cold runs may be partly warm \\
 Data and queries & official \texttt{dbgen} flat files; \texttt{qgen -d} & \DK's \texttt{tpch} extension, Parquet; its query texts and reference answers & same rows and parameters, but generator and answers come from one of the engines under test \\
 \CH\ client & native client & HTTP interface & client overhead measured (median \V{headline.ch_client_overhead_median_ms}\,ms) \\
@@ -303,9 +312,8 @@ Loads & 10 (SF1) and 5 (SF10) & 3 per engine and SF & load difference cannot be 
 Run order & random within blocks; blocks \CH, \DK, \DK, \CH & random query order; engine order alternates between SFs & drift is spread over the engines only across SFs \\
 RQ1 figure & ratio per query & latency per run (Figure~\ref{fig:latency}); ratios in Table~\ref{tab:latency} & none \\
 Sensitivity check & SF10 with \texttt{grace\_hash} joins & not run & no query came near the memory limit \\
-\bottomrule
-\end{tabularx}
-\end{table}
+\end{xltabular}
+}
 
 \section{Data needed for the full experiment}
 \label{sec:needs}
@@ -334,8 +342,6 @@ Total query runs & \V{headline.n_runs} & at least \V{headline.full_study_query_r
 \end{tabularx}
 \end{table}
 
-\FloatBarrier
-
 \section{Discussion (e)}
 
 \textbf{Did the results match our expectations?} Partly.
@@ -352,6 +358,8 @@ More warm runs of the same kind would add little, except for the few noisy combi
 We used one laptop with a Linux virtual machine under macOS (whose own page cache we could not empty), one run order, two SFs and default settings with four threads and \texttt{Decimal} columns, which may keep \CH\ far from its best.
 The engines' own memory numbers also measure different things.
 The pilot therefore shows which data the full study needs; it does not yet show which engine is better in general.
+
+\FloatBarrier
 
 \section{Reproducibility, ethics and sustainability}
 
