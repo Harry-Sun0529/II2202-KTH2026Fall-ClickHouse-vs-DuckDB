@@ -1,7 +1,8 @@
 key,file,selector,column,raw,shown
 be.sf1,breakeven.csv,"sf=1,load_basis=total_s",n_star,-21.610539456394402,$-$21.6
 be.sf10,breakeven.csv,"sf=10,load_basis=total_s",n_star,-20.001193123044235,$-$20.0
-headline.boot_median_halfwidth_n3_pct,headline.csv,key=boot_median_halfwidth_n3,value,0.07090005816054443,7.1
+headline.added_peak_max_gib_clickhouse_sf10,headline.csv,key=added_peak_max_gib_clickhouse_sf10,value,1.097433090209961,1.10
+headline.added_peak_max_gib_duckdb_sf10,headline.csv,key=added_peak_max_gib_duckdb_sf10,value,0.11543655395507812,0.12
 headline.ch_client_overhead_median_ms,headline.csv,key=ch_client_overhead_median_ms,value,0.767000000000003,0.8
 headline.cold_ch_faster_queries_sf10,headline.csv,key=cold_ch_faster_queries_sf10,value,"Q6, Q3, Q13","Q6, Q3, Q13"
 headline.cold_ch_faster_ratio_max,headline.csv,key=cold_ch_faster_ratio_max,value,0.9307117645299274,0.93
@@ -19,10 +20,19 @@ headline.duck_faster_ratio_min,headline.csv,key=duck_faster_ratio_min,value,1.26
 headline.engine_peak_max_gib_clickhouse_sf10,headline.csv,key=engine_peak_max_gib_clickhouse_sf10,value,1.688707667402923,1.69
 headline.engine_peak_max_gib_duckdb_sf10,headline.csv,key=engine_peak_max_gib_duckdb_sf10,value,1.4408206939697266,1.44
 headline.full_study_query_runs,headline.csv,key=full_study_query_runs,value,1344.0,1344
+headline.h1_n_supported,headline.csv,key=h1_n_supported,value,0.0,0
+headline.h1_n_tests,headline.csv,key=h1_n_tests,value,10.0,10
+headline.h2_n_supported,headline.csv,key=h2_n_supported,value,0.0,0
+headline.h2_n_tests,headline.csv,key=h2_n_tests,value,3.0,3
 headline.idle_gib_clickhouse_sf1,headline.csv,key=idle_gib_clickhouse_sf1,value,1.2788219451904297,1.28
 headline.idle_gib_duckdb_sf1,headline.csv,key=idle_gib_duckdb_sf1,value,0.08075714111328125,0.08
+headline.import_mrows_s_clickhouse_sf1,headline.csv,key=import_mrows_s_clickhouse_sf1,value,1.658934516462561,1.7
+headline.import_mrows_s_clickhouse_sf10,headline.csv,key=import_mrows_s_clickhouse_sf10,value,1.8222897751586298,1.8
+headline.import_mrows_s_duckdb_sf1,headline.csv,key=import_mrows_s_duckdb_sf1,value,2.8394862753321735,2.8
+headline.import_mrows_s_duckdb_sf10,headline.csv,key=import_mrows_s_duckdb_sf10,value,3.2446170113681765,3.2
 headline.load_ratio_sf1,headline.csv,key=load_ratio_sf1,value,3.0081171220187177,3.0
 headline.load_ratio_sf10,headline.csv,key=load_ratio_sf10,value,3.262720137300585,3.3
+headline.mw_min_p_3v3,headline.csv,key=mw_min_p_3v3,value,0.1,0.10
 headline.mw_min_p_5v5,headline.csv,key=mw_min_p_5v5,value,0.007936507936507936,0.008
 headline.n_combos,headline.csv,key=n_combos,value,32.0,32
 headline.n_comparisons,headline.csv,key=n_comparisons,value,16.0,16
@@ -51,6 +61,8 @@ headline.ratio_min_q1_q21,headline.csv,key=ratio_min_q1_q21,value,2.973456665996
 headline.slope_max,headline.csv,key=slope_max,value,1.0840923095288661,1.08
 headline.slope_median,headline.csv,key=slope_median,value,0.9826210882286206,0.98
 headline.slope_min,headline.csv,key=slope_min,value,0.932791183496073,0.93
+headline.total_mrows_s_clickhouse_sf1,headline.csv,key=total_mrows_s_clickhouse_sf1,value,0.8866855891355178,0.9
+headline.total_mrows_s_clickhouse_sf10,headline.csv,key=total_mrows_s_clickhouse_sf10,value,0.9943538604700403,1.0
 load.anon_max_sf10,load_summary.csv,"sf=10,max over engines",load_anon_peak_max_bytes,3292131328.0,3.07
 memory.max_gap_pct,memory_check.csv,row=0,max_rel_gap,0.02017018594390167,2.0
 memory.max_interval_ms,memory_check.csv,row=0,max_interval_ms,4.756364583333333,4.8

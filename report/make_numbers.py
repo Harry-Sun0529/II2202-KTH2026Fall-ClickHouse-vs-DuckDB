@@ -50,6 +50,13 @@ HEAD_DEC = {
     "max_p_holm_significant": 4, "mw_min_p_5v5": 3, "pilot_load_minutes": 0, "pilot_query_minutes": 0,
     "ch_engine_peak_max_gib": 2, "full_study_query_runs": 0, "ch_client_overhead_median_ms": 1, "peak_max_gib": 2,
     "order_share_below_5pct_n10_pct": 0, "order_share_below_5pct_n15_pct": 0, "order_share_below_5pct_n20_pct": 0,
+    "mw_min_p_3v3": 2, "h1_n_tests": 0, "h1_n_supported": 0, "h2_n_tests": 0, "h2_n_supported": 0,
+    "h3_n_sf_duck_10pct_faster": 0,
+    "import_mrows_s_clickhouse_sf1": 1, "import_mrows_s_clickhouse_sf10": 1,
+    "import_mrows_s_duckdb_sf1": 1, "import_mrows_s_duckdb_sf10": 1,
+    "total_mrows_s_clickhouse_sf1": 1, "total_mrows_s_clickhouse_sf10": 1,
+    "total_mrows_s_duckdb_sf1": 1, "total_mrows_s_duckdb_sf10": 1,
+    "added_peak_max_gib_clickhouse_sf10": 2, "added_peak_max_gib_duckdb_sf10": 2,
     "order_median_halfwidth_n20_pct": 1, "order_max_halfwidth_n20_pct": 1, "boot_median_halfwidth_n3_pct": 1,
 }
 

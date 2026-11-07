@@ -323,7 +323,26 @@ def headline(summ, comp, scal, ls, be, reps_agg, reps_eng, r) -> pd.DataFrame:
         flips = c[(c.cold_ratio_ch_over_duck < 1) != (c.ratio_ch_over_duck < 1)]
         h[f"n_cold_flips_sf{sf}"] = len(flips)
         h[f"cold_flip_queries_sf{sf}"] = ", ".join(f"Q{q}" for q in flips.query_id)
-    # Smallest two-sided p of an exact Mann-Whitney test with 5 vs 5 loads (complete separation).
+        for e in ENGINES:
+            row = ls[(ls.sf == sf) & (ls.engine == e)].iloc[0]
+            # Load throughput in million rows per second, import only and including merge/checkpoint.
+            h[f"import_mrows_s_{e}_sf{sf}"] = row.rows_total / row.load_median_s / 1e6
+            h[f"total_mrows_s_{e}_sf{sf}"] = row.rows_total / row.total_median_s / 1e6
+            # Research-plan metric: peak minus container memory just before the query (largest median over queries).
+            s_ = summ[(summ.engine == e) & (summ.sf == sf)]
+            h[f"added_peak_max_gib_{e}_sf{sf}"] = s_.added_peak_median_bytes.max() / GIB
+    # Hypotheses H1-H3 of the research plan, with its decision rules.
+    sa = comp[comp.query_class.isin(["scan", "aggregation"])]
+    h["h1_n_tests"] = len(sa)
+    h["h1_n_supported"] = int(((sa.ratio_hi < 0.9) & sa.significant).sum())
+    j1 = comp[(comp.query_class == "join") & (comp.sf == min(SFS))]
+    h["h2_n_tests"] = len(j1)
+    h["h2_n_supported"] = int(((j1.ratio_lo >= 0.8) & (j1.ratio_hi <= 1.25)).sum())
+    h["h3_n_sf_duck_10pct_faster"] = int(sum(
+        ls[(ls.sf == sf) & (ls.engine == "duckdb")].total_median_s.iloc[0]
+        <= 0.9 * ls[(ls.sf == sf) & (ls.engine == "clickhouse")].total_median_s.iloc[0] for sf in SFS))
+    # Smallest two-sided p of an exact Mann-Whitney test with 3 vs 3 (pilot) and 5 vs 5 loads (complete separation).
+    h["mw_min_p_3v3"] = float(sps.mannwhitneyu([1, 2, 3], [4, 5, 6], method="exact").pvalue)
     h["mw_min_p_5v5"] = float(sps.mannwhitneyu([1, 2, 3, 4, 5], [6, 7, 8, 9, 10], method="exact").pvalue)
     loads_ts = pd.to_datetime(pd.read_csv(ROOT / "results/load_runs.csv").timestamp)
     runs_ts = pd.to_datetime(r.timestamp)

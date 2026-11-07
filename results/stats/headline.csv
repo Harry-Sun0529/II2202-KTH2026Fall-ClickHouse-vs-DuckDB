@@ -66,8 +66,26 @@ disk_ratio_sf10,1.6867445959136667
 q_ratio_sf10,1.8712787858255508
 n_cold_flips_sf1,1
 cold_flip_queries_sf1,Q13
+import_mrows_s_clickhouse_sf1,1.658934516462561
+total_mrows_s_clickhouse_sf1,0.8866855891355178
+added_peak_max_gib_clickhouse_sf1,0.0042724609375
+import_mrows_s_duckdb_sf1,2.8394862753321735
+total_mrows_s_duckdb_sf1,2.6672541025258045
+added_peak_max_gib_duckdb_sf1,0.00759124755859375
 n_cold_flips_sf10,3
 cold_flip_queries_sf10,"Q6, Q3, Q18"
+import_mrows_s_clickhouse_sf10,1.8222897751586298
+total_mrows_s_clickhouse_sf10,0.9943538604700403
+added_peak_max_gib_clickhouse_sf10,1.097433090209961
+import_mrows_s_duckdb_sf10,3.2446170113681765
+total_mrows_s_duckdb_sf10,3.244298364158176
+added_peak_max_gib_duckdb_sf10,0.11543655395507812
+h1_n_tests,10
+h1_n_supported,0
+h2_n_tests,3
+h2_n_supported,0
+h3_n_sf_duck_10pct_faster,2
+mw_min_p_3v3,0.1
 mw_min_p_5v5,0.007936507936507936
 pilot_load_minutes,7.40885
 pilot_query_minutes,5.994883333333333
