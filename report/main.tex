@@ -27,7 +27,7 @@
 
 \input{numbers.tex}
 
-\newcommand{\reportdate}{November 5, 2026}
+\newcommand{\reportdate}{November 10, 2026}
 \pagestyle{fancy}
 \fancyhf{}
 \renewcommand{\headrulewidth}{0pt}
@@ -162,7 +162,7 @@ The driver reads the container's \texttt{memory.current} every 2\,ms during each
 As a check, it also resets and reads the kernel's exact high-water mark (\texttt{memory.peak}).
 The sampled maximum is within 1\,\% of it in \V{memory.share_below_1pct}\,\% of the runs and never more than \V{memory.max_gap_pct}\,\% below it.
 This container-level number includes the page cache of files the engine has read or written, so we also record the anonymous (heap) memory, and each engine's own number: the \texttt{memory\_usage} in \CH's query log, and the resident set size of the \DK\ process.
-Our research plan also proposed the peak minus the memory just before the query, but at container level this is close to zero for warm runs because memory from the previous run has not been given back (largest median at SF10: \V{headline.added_peak_max_gib_clickhouse_sf10}\,GiB for \CH\ and \V{headline.added_peak_max_gib_duckdb_sf10}\,GiB for \DK), so we report the absolute peak only.
+Our research plan also proposed the peak minus the memory just before the query, but at container level this is close to zero for most warm runs because memory from the previous run has not been given back (largest median at SF10: \V{headline.added_peak_max_gib_clickhouse_sf10}\,GiB for \CH\ and \V{headline.added_peak_max_gib_duckdb_sf10}\,GiB for \DK), so we report the absolute peak only.
 
 \textbf{Exploratory analysis.} We plotted every run (Figure~\ref{fig:latency}), tested normality with the Shapiro--Wilk test, computed the CV and checked each expectation against the data.
 
@@ -304,15 +304,15 @@ Item & Research plan & Pilot & Consequence \\
 Machine & dedicated Linux machine & laptop, Linux VM under Docker Desktop & host page cache cannot be emptied; cold runs may be partly warm \\
 Data and queries & official \texttt{dbgen} flat files; \texttt{qgen -d} & \DK's \texttt{tpch} extension, Parquet; its query texts and reference answers & same rows and parameters, but generator and answers come from one of the engines under test \\
 \CH\ client & native client & HTTP interface & client overhead measured (median \V{headline.ch_client_overhead_median_ms}\,ms) \\
-Memory limit & 8\,GiB engine setting, cgroup slightly above & 7\,GiB engine setting, 8\,GiB container & engines stay below the container limit \\
+Memory limit & the same 8\,GiB limit for both engines, through the cgroup & 7\,GiB engine setting inside an 8\,GiB container & engines stay below the container limit \\
 \CH\ spilling & defaults, values recorded & GROUP BY and ORDER BY spill at 3\,GiB & no query reached the threshold \\
 Memory metric & peak RSS of the engine process & peak of the container (cgroup), checked against the kernel watermark & includes page cache; engine-own and anonymous memory also reported \\
 Query runs & 8 cold; 10 warm after a discarded warm-up & 1 cold; 20 warm right after it & cold differences cannot be tested \\
 Loads & 10 (SF1) and 5 (SF10) & 3 per engine and SF & load difference cannot be significant \\
-\CH\ merges & wait until \texttt{system.merges} is empty for 30\,s & forced with \texttt{OPTIMIZE ... FINAL}, timed separately & merge time shown separately in Table~\ref{tab:load} \\
+\CH\ merges & record the time until background merges have finished & forced with \texttt{OPTIMIZE ... FINAL}, timed separately & merge time shown separately in Table~\ref{tab:load} \\
 Run order & random within blocks; blocks \CH, \DK, \DK, \CH & random query order; engine order alternates between SFs & drift is spread over the engines only across SFs \\
 RQ1 figure & ratio per query & latency per run (Figure~\ref{fig:latency}); ratios in Table~\ref{tab:latency} & none \\
-Sensitivity check & SF10 with \texttt{grace\_hash} joins & not run & no query came near the memory limit \\
+Sensitivity check & rerun the SF10 queries that hit the memory limit with explicit \CH\ spill thresholds & not run & no query came near the memory limit \\
 \end{xltabular}
 }
 

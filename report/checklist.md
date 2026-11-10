@@ -1,8 +1,10 @@
 # Checklist: II2202 Quantitative Exercise (Part 2, group report)
 
-Report: `report/II2202_Quantitative_Exercise.pdf` (8 pages). Checked 2026-11-05.
+Report: `report/II2202_Quantitative_Exercise.pdf` (9 pages). Checked 2026-11-05, re-checked 2026-11-10.
 
 **2026-11-07, branch `report-plan-alignment`:** 'Research plan' paragraph and Table 5 (deviations from the plan) at the end of §5, H1–H3 judged with the plan's rules, the plan's peak-minus-baseline metric, ethics and sustainability in §8, load throughput, source of the reference answers, aborted load campaign; light humanizer pass on the prose. No AI-use statement (group decision). The PDF now has 9 pages. It was built on Windows with Tectonic 0.17 (XeTeX) and the Source Sans 3.052 OTF files, because Docker was not available; Gate 4 passed on that build. `make report` (LuaLaTeX in texlive) gives the same text, but the line breaks can differ slightly. The PDF in the repo is still the old build: run `make report` before you submit.
+
+**2026-11-10, final check before submission:** rebuilt with `make report` (LuaLaTeX, TeX Live 2026 in Docker); Gate 4 passed (9 pages, 450 number tokens all traced, no overfull boxes). Three rows of the deviations table (Table 5) were corrected against the research plan PDF (2026-10-07): the plan sets the same 8 GiB limit for both engines through the cgroup, records the time until background merges finish (no '30 s' rule), and its sensitivity check reruns SF10 queries with explicit ClickHouse spill thresholds (not `grace_hash`). 'close to zero for warm runs' → 'for most warm runs' (the largest median is 1.10 GiB). Header date set to November 10, 2026. Analysis tests 13/13 and Gate 2 re-run: pass.
 
 ## Step 1 (analysis in Python)
 
